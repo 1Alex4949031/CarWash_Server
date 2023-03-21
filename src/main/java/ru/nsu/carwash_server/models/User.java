@@ -1,6 +1,9 @@
 package ru.nsu.carwash_server.models;
 
 
+import lombok.Getter;
+import lombok.Setter;
+
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
@@ -26,6 +29,8 @@ import java.util.Set;
 		})
 public class User {
 	@Id
+	@Getter
+	@Setter
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
@@ -65,14 +70,6 @@ public class User {
 		this.email = email;
 		this.password = password;
 		setPhone(username);
-	}
-
-	public Long getId() {
-		return id;
-	}
-
-	public void setId(Long id) {
-		this.id = id;
 	}
 
 	public String getUsername() {

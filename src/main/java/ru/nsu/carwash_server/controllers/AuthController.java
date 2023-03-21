@@ -82,7 +82,7 @@ public class AuthController {
   @PostMapping("/signup")
   public ResponseEntity<?> registerUser(@Valid @RequestBody SignupRequest signUpRequest) {
     if (userRepository.existsByUsername(signUpRequest.getUsername())) {
-      return ResponseEntity.badRequest().body(new MessageResponse("Error: Phone is already in user!"));
+      return ResponseEntity.badRequest().body(new MessageResponse("Error: телефон уже занят!"));
     }
 
     // Create new user's account

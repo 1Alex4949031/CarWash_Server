@@ -14,7 +14,7 @@ import ru.nsu.carwash_server.payload.response.MessageResponse;
 import ru.nsu.carwash_server.repository.OrdersRepository;
 
 import javax.validation.Valid;
-import java.util.Date;
+
 
 @CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
@@ -30,11 +30,12 @@ public class OrderController {
         return ResponseEntity.ok(new MessageResponse("New order added successfully!"));
     }
 
-    /*@PostMapping("/bookOrder")
+    //TODO проверить что такой айди пользователя существует
+    @PostMapping("/bookOrder")
     public ResponseEntity<?> bookOrder(@Valid @RequestBody BookingOrderRequest bookingOrderRequest) {
-        ordersRepository.changeOrderToBooked(true, bookingOrderRequest.getUser().getId(),
-                bookingOrderRequest.getOrder().getId());
-        return ResponseEntity.ok(new MessageResponse("User" + bookingOrderRequest.getUser().getUsername()
-                + "забронировал заказ" + bookingOrderRequest.getOrder().getId()));
-    }*/
+        ordersRepository.changeOrderToBooked(true, bookingOrderRequest.getUserId(),
+                bookingOrderRequest.getOrderId(), bookingOrderRequest.getPrice());
+        return ResponseEntity.ok(new MessageResponse("Пользователь " + bookingOrderRequest.getUserId()
+                + "забронировал заказ " + bookingOrderRequest.getOrderId()));
+    }
 }
