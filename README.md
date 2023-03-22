@@ -37,7 +37,7 @@
    Тут выходные данные уже куда интереснее. Мы получаем информацию о том, кто залогинился (айди, телефон, почту, роли).\
    Еще мы получаем accessToken и refreshtoken. После 3 запроса об этом подробнее
 3) ```@PostMapping("/api/auth/refreshtoken)``` - обновление токена\
-На вход подаётся username (phone) и password\
+На вход подаётся сам refresh token, время действия которого уже вышло\
    http://localhost:8080/api/auth/refreshtoken  
    ```
    {
