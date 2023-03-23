@@ -64,7 +64,7 @@
 На выход пока просто информация, что заказ добавлен
 5) ```@PostMapping("api/orders//bookOrder")``` - бронирование существующего заказа\
 На вход подаётся название услуги, дата, цена\
-   http://localhost:8080/api/orders/newOrder 
+   http://localhost:8080/api/orders/bookOrder 
    ```
    {
     "name": "моем машину",
