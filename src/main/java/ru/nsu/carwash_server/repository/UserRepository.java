@@ -17,14 +17,21 @@ public interface UserRepository extends JpaRepository<User, Long> {
   @Modifying
   @Transactional
   @Query(value = "UPDATE users SET email = COALESCE(:Email, email), username = COALESCE(:Phone, username), " +
-          "phone = COALESCE(:Phone, phone)" +
+          "phone = COALESCE(:Phone, phone), fullName = COALESCE(:FullName, fullName)" +
           "WHERE id = :UserId", nativeQuery = true)
-  int changeUserInfo(@Param("Email") String email, @Param("Phone") String username, @Param("UserId") Long userId);
+  int changeUserInfo(@Param("Email") String email, @Param("Phone") String username,
+                     @Param("UserId") Long userId, @Param("FullName") String fullName);
 
-  Optional<User> findByUsername(String username);
+
+
+  @Query(value = "SELECT * FROM users WHERE username = :username",
+          nativeQuery = true)
+  Optional<User> findByUsername(@Param("username") String username);
 
   Boolean existsByUsername(String username);
 
-  Boolean existsByEmail(String email);
+  @Override
+  Optional<User> findById(Long aLong);
 
+  Boolean existsByEmail(String email);
 }

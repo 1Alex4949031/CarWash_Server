@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import ru.nsu.carwash_server.models.Orders;
+import ru.nsu.carwash_server.models.Order;
 import ru.nsu.carwash_server.payload.request.BookingOrderRequest;
 import ru.nsu.carwash_server.payload.request.NewOrderRequest;
 import ru.nsu.carwash_server.payload.response.MessageResponse;
@@ -25,17 +25,18 @@ public class OrderController {
 
     @PostMapping("/newOrder")
     public ResponseEntity<?> createOrder(@Valid @RequestBody NewOrderRequest newOrderRequest) {
-        Orders newOrder = new Orders(newOrderRequest.getName(), newOrderRequest.getPrice(), newOrderRequest.getDate());
+        Order newOrder = new Order(newOrderRequest.getName(), newOrderRequest.getPrice(), newOrderRequest.getDate());
         ordersRepository.save(newOrder);
         return ResponseEntity.ok(new MessageResponse("New order added successfully!"));
     }
 
-    //TODO проверить что такой айди пользователя существует
     @PostMapping("/bookOrder")
     public ResponseEntity<?> bookOrder(@Valid @RequestBody BookingOrderRequest bookingOrderRequest) {
         ordersRepository.changeOrderToBooked(true, bookingOrderRequest.getUserId(),
-                bookingOrderRequest.getOrderId(), bookingOrderRequest.getPrice());
-        return ResponseEntity.ok(new MessageResponse("Пользователь " + bookingOrderRequest.getUserId()
-                + "забронировал заказ " + bookingOrderRequest.getOrderId()));
+                bookingOrderRequest.getPrice(), bookingOrderRequest.getAutoId(),
+                bookingOrderRequest.getSpecialist(), bookingOrderRequest.getAdministrator(),
+                bookingOrderRequest.getBoxNumber(), bookingOrderRequest.getOrderId(), bookingOrderRequest.getBonuses());
+        return ResponseEntity.ok("Пользователь " + bookingOrderRequest.getUserId().toString()
+                + " забронировал заказ " + bookingOrderRequest.getOrderId() + " с машиной: " + bookingOrderRequest.getAutoId());
     }
 }
