@@ -11,7 +11,6 @@ import java.util.Set;
 public class UpdateUserInfoRequest {
     @Email
     private String email;
-    private Long id;
     private String username;
     private String fullName;
     private Set<Role> role;

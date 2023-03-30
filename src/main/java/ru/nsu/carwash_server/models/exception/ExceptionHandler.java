@@ -1,4 +1,4 @@
-package ru.nsu.carwash_server.exception;
+package ru.nsu.carwash_server.models.exception;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;

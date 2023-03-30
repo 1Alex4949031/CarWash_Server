@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import ru.nsu.carwash_server.exception.TokenRefreshException;
+import ru.nsu.carwash_server.models.exception.TokenRefreshException;
 import ru.nsu.carwash_server.models.ERole;
 import ru.nsu.carwash_server.models.RefreshToken;
 import ru.nsu.carwash_server.models.Role;
@@ -77,7 +77,7 @@ public class AuthController {
         RefreshToken refreshToken = refreshTokenService.createRefreshToken(userDetails.getId());
 
         return ResponseEntity.ok(new JwtResponse(jwt, refreshToken.getToken(), userDetails.getId(),
-                userDetails.getUsername(), userDetails.getEmail(), roles));
+                userDetails.getUsername(), roles));
     }
 
     @PostMapping("/signup")
@@ -86,7 +86,6 @@ public class AuthController {
             return ResponseEntity.badRequest().body(new MessageResponse("Error: телефон уже занят!"));
         }
 
-        // Create new user's account
         User user = new User(signUpRequest.getUsername(),
                 encoder.encode(signUpRequest.getPassword()));
 
@@ -144,5 +143,4 @@ public class AuthController {
         refreshTokenService.deleteByUserId(userId);
         return ResponseEntity.ok(new MessageResponse("Log out successful!"));
     }
-
 }

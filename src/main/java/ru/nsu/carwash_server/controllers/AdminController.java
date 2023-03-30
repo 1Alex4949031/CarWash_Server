@@ -9,15 +9,15 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import ru.nsu.carwash_server.models.Order;
 import ru.nsu.carwash_server.models.User;
 import ru.nsu.carwash_server.payload.request.FindingUserInfo;
+import ru.nsu.carwash_server.payload.response.UserInformationResponse;
+import ru.nsu.carwash_server.payload.response.UserOrdersResponse;
 import ru.nsu.carwash_server.repository.OrdersRepository;
 import ru.nsu.carwash_server.repository.RoleRepository;
 import ru.nsu.carwash_server.repository.UserRepository;
 
 import javax.validation.Valid;
-import java.util.Set;
 
 @CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
@@ -44,17 +44,16 @@ public class AdminController {
     public ResponseEntity<?> findByTelephone(@Valid @RequestBody FindingUserInfo userInfoRequest) {
         User user = userRepository.findByUsername(userInfoRequest.getUsername())
                 .orElseThrow(() -> new RuntimeException("Error: Пользователя с таким телефоном не существует"));
-        return ResponseEntity.ok(user);
+        return ResponseEntity.ok(new UserInformationResponse(user.getOrders(), user.getId(),
+                user.getAuto(), user.getFullName(), user.getPhone(), user.getEmail(),
+                user.getBonuses(), user.getRoles()));
     }
 
-    @PostMapping("/getUserOrders")
+    @PostMapping("/getUserOrdersByAdmin")
     @PreAuthorize("hasRole('MODERATOR') or hasRole('ADMIN')")
     public ResponseEntity<?> getUserOrders(@Valid @RequestBody FindingUserInfo userInfoRequest) {
-        if (!userRepository.existsByUsername(userInfoRequest.getUsername())) {
-            throw new RuntimeException("Error: Пользователя с такой почтой не существует");
-        }
-        Set<Order> userOrders = ordersRepository.getOrdersByUserId(userInfoRequest.getUsername())
-                .orElseThrow(() -> new RuntimeException("Error: Невозможно получить заказы этого пользователя"));
-        return ResponseEntity.ok(userOrders);
+        User user = userRepository.findByUsername(userInfoRequest.getUsername())
+                .orElseThrow(() -> new RuntimeException("Error: Пользователя с таким телефоном не существует"));
+        return ResponseEntity.ok(new UserOrdersResponse(userRepository.findOrdersById(user.getId()), user.getUsername()));
     }
 }

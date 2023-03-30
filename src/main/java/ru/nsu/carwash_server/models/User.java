@@ -40,12 +40,9 @@ public class User {
     private String phone;
     @OneToMany(mappedBy = "user")
     private Set<Order> orders;
-
     @Email
     private String email;
-
     private int bonuses;
-
     @NotBlank
     private String password;
 

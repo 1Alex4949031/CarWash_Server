@@ -1,19 +1,24 @@
 package ru.nsu.carwash_server.controllers;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.xml.DocumentDefaultsDefinition;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import ru.nsu.carwash_server.models.Auto;
+import ru.nsu.carwash_server.models.User;
+import ru.nsu.carwash_server.payload.request.FindingUserInfo;
 import ru.nsu.carwash_server.payload.request.NewCarRequest;
 import ru.nsu.carwash_server.payload.request.UpdateUserInfoRequest;
 import ru.nsu.carwash_server.payload.response.MessageResponse;
+import ru.nsu.carwash_server.payload.response.UserOrdersResponse;
 import ru.nsu.carwash_server.repository.CarRepository;
 import ru.nsu.carwash_server.repository.UserRepository;
+import ru.nsu.carwash_server.security.services.UserDetailsImpl;
 
 import javax.validation.Valid;
 
@@ -29,15 +34,19 @@ public class UserController {
 
     @PostMapping("/updateUserInfo")
     public ResponseEntity<?> changeUserInfo(@Valid @RequestBody UpdateUserInfoRequest updateUserInfoRequest) {
+        UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        Long userId = userDetails.getId();
         userRepository.changeUserInfo(updateUserInfoRequest.getEmail(), updateUserInfoRequest.getUsername(),
-                updateUserInfoRequest.getId(), updateUserInfoRequest.getFullName());
-        return ResponseEntity.ok(new MessageResponse("Пользователь " + updateUserInfoRequest.getId()
+                userId, updateUserInfoRequest.getFullName());
+        return ResponseEntity.ok(new MessageResponse("Пользователь " + userId
                 + " получил почту " + updateUserInfoRequest.getEmail()
                 + " и новый телефон " + updateUserInfoRequest.getUsername()));
     }
 
     @PostMapping("/saveNewCar")
     public ResponseEntity<?> saveNewCar(@Valid @RequestBody NewCarRequest newCarRequest) {
+        UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        Long userId = userDetails.getId();
         Auto userAuto = new Auto();
         userAuto.setUsers(newCarRequest.getUser());
         userAuto.setCarNumber(newCarRequest.getCarNumber());
@@ -45,5 +54,13 @@ public class UserController {
         carRepository.save(userAuto);
         return ResponseEntity.ok(new MessageResponse("Пользователь " + newCarRequest.getUser().getId()
                 + " добавил машину " + newCarRequest.getCarNumber()));
+    }
+
+    @PostMapping("/getUserOrders")
+    public ResponseEntity<?> getUserOrders() {
+        UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        User user = userRepository.findById(userDetails.getId())
+                .orElseThrow(() -> new RuntimeException("Error: Пользователя с таким телефоном не существует"));
+        return ResponseEntity.ok(new UserOrdersResponse(userRepository.findOrdersById(user.getId()), user.getUsername()));
     }
 }

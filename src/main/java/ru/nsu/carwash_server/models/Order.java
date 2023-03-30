@@ -37,6 +37,7 @@ public class Order {
     private int bonuses;
     private boolean booked;
     private boolean executed;
+    private String comments;
     @OneToOne
     @JoinColumn(name = "auto_id", referencedColumnName = "id")
     private Auto auto;

@@ -10,8 +10,6 @@ import java.util.Date;
 public class BookingOrderRequest {
     @NotNull
     private Long orderId;
-    @NotNull
-    private Long userId;
     private Double price;
     private Date date;
     private String administrator;
@@ -20,4 +18,5 @@ public class BookingOrderRequest {
     private Long autoId;
     private int boxNumber;
     private int bonuses;
+    private String comments;
 }

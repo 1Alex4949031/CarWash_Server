@@ -1,5 +1,6 @@
 package ru.nsu.carwash_server.models;
 
+
 import lombok.Getter;
 import lombok.Setter;
 
