@@ -9,13 +9,10 @@ import javax.validation.constraints.NotNull;
 import java.util.Date;
 
 public class NewOrderRequest {
-
-    @NotNull
     @Getter
     @Setter
     private Double price;
 
-    @NotBlank
     @Getter
     @Setter
     private String name;

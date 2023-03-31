@@ -2,16 +2,16 @@ package ru.nsu.carwash_server.controllers;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import ru.nsu.carwash_server.models.Auto;
 import ru.nsu.carwash_server.models.User;
-import ru.nsu.carwash_server.payload.request.FindingUserInfo;
 import ru.nsu.carwash_server.payload.request.NewCarRequest;
 import ru.nsu.carwash_server.payload.request.UpdateUserInfoRequest;
 import ru.nsu.carwash_server.payload.response.MessageResponse;
@@ -32,7 +32,7 @@ public class UserController {
     @Autowired
     CarRepository carRepository;
 
-    @PostMapping("/updateUserInfo")
+    @PutMapping("/updateUserInfo")
     public ResponseEntity<?> changeUserInfo(@Valid @RequestBody UpdateUserInfoRequest updateUserInfoRequest) {
         UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         Long userId = userDetails.getId();
@@ -47,16 +47,14 @@ public class UserController {
     public ResponseEntity<?> saveNewCar(@Valid @RequestBody NewCarRequest newCarRequest) {
         UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         Long userId = userDetails.getId();
-        Auto userAuto = new Auto();
-        userAuto.setUsers(newCarRequest.getUser());
-        userAuto.setCarNumber(newCarRequest.getCarNumber());
-        userAuto.setCarClass(newCarRequest.getCarClass());
+        User user = new User(userId);
+        Auto userAuto = new Auto(newCarRequest.getCarNumber(), newCarRequest.getCarClass(),user);
         carRepository.save(userAuto);
-        return ResponseEntity.ok(new MessageResponse("Пользователь " + newCarRequest.getUser().getId()
+        return ResponseEntity.ok(new MessageResponse("Пользователь " + userId
                 + " добавил машину " + newCarRequest.getCarNumber()));
     }
 
-    @PostMapping("/getUserOrders")
+    @GetMapping("/getUserOrders")
     public ResponseEntity<?> getUserOrders() {
         UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         User user = userRepository.findById(userDetails.getId())

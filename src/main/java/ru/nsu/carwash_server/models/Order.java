@@ -1,5 +1,6 @@
 package ru.nsu.carwash_server.models;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -19,6 +20,7 @@ import java.util.Date;
 
 @Entity
 @Setter @Getter
+@AllArgsConstructor
 @Table(name = "orders")
 public class Order {
     @Id
@@ -36,7 +38,7 @@ public class Order {
     private int boxNumber;
     private int bonuses;
     private boolean booked;
-    private boolean executed;
+    private boolean executed = false;
     private String comments;
     @OneToOne
     @JoinColumn(name = "auto_id", referencedColumnName = "id")
@@ -48,6 +50,22 @@ public class Order {
     public Order() {
     }
 
+    public Order(String name, double price, Date date, String administrator, String specialist,
+                 int boxNumber, int bonuses, boolean booked, boolean executed, String comments,
+                 Auto auto, User user){
+        this.name = name;
+        this.price = price;
+        this.date = date;
+        this.administrator = administrator;
+        this.specialist = specialist;
+        this.boxNumber = boxNumber;
+        this.bonuses = bonuses;
+        this.booked = booked;
+        this.executed = executed;
+        this.comments = comments;
+        this.auto = auto;
+        this.user = user;
+    }
     public Order(String name, double price, Date date) {
         this.name = name;
         this.price = price;

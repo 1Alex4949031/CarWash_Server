@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -32,14 +33,14 @@ public class AdminController {
     @Autowired
     OrdersRepository ordersRepository;
 
-    @PostMapping("/adminRoleCheck")
+    @GetMapping("/adminRoleCheck")
     @PreAuthorize("hasRole('ADMIN')")
     public String adminAccess() {
         return "Admin Board.";
     }
 
 
-    @PostMapping("/findUserByTelephone")
+    @GetMapping("/findUserByTelephone")
     @PreAuthorize("hasRole('MODERATOR') or hasRole('ADMIN')")
     public ResponseEntity<?> findByTelephone(@Valid @RequestBody FindingUserInfo userInfoRequest) {
         User user = userRepository.findByUsername(userInfoRequest.getUsername())
@@ -49,7 +50,7 @@ public class AdminController {
                 user.getBonuses(), user.getRoles()));
     }
 
-    @PostMapping("/getUserOrdersByAdmin")
+    @GetMapping("/getUserOrdersByAdmin")
     @PreAuthorize("hasRole('MODERATOR') or hasRole('ADMIN')")
     public ResponseEntity<?> getUserOrders(@Valid @RequestBody FindingUserInfo userInfoRequest) {
         User user = userRepository.findByUsername(userInfoRequest.getUsername())
