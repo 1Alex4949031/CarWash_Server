@@ -3,19 +3,23 @@ package ru.nsu.carwash_server.models;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
+import ru.nsu.carwash_server.models.constants.EBox;
 
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
+import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.util.Date;
-
+import java.util.HashSet;
 
 
 @Entity
@@ -32,7 +36,8 @@ public class Order {
 
     @NotBlank
     private String name;
-    private Date date;
+    private Date startTime;
+    private Date endTime;
     private String administrator;
     private String specialist;
     private int boxNumber;
@@ -40,6 +45,7 @@ public class Order {
     private boolean booked;
     private boolean executed = false;
     private String comments;
+
     @OneToOne
     @JoinColumn(name = "auto_id", referencedColumnName = "id")
     private Auto auto;
@@ -50,12 +56,13 @@ public class Order {
     public Order() {
     }
 
-    public Order(String name, double price, Date date, String administrator, String specialist,
+    public Order(String name, double price, Date startTime, Date endTime, String administrator, String specialist,
                  int boxNumber, int bonuses, boolean booked, boolean executed, String comments,
                  Auto auto, User user){
         this.name = name;
         this.price = price;
-        this.date = date;
+        this.startTime = startTime;
+        this.endTime = endTime;
         this.administrator = administrator;
         this.specialist = specialist;
         this.boxNumber = boxNumber;
@@ -66,9 +73,9 @@ public class Order {
         this.auto = auto;
         this.user = user;
     }
-    public Order(String name, double price, Date date) {
+    public Order(String name, double price, Date startTime) {
         this.name = name;
         this.price = price;
-        this.date = date;
+        this.startTime = startTime;
     }
 }

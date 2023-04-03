@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+import ru.nsu.carwash_server.models.Auto;
 import ru.nsu.carwash_server.models.Order;
 import ru.nsu.carwash_server.models.User;
 
@@ -20,7 +21,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
     @Query(value = "UPDATE users SET email = COALESCE(:Email, email), username = COALESCE(:Phone, username), " +
             "phone = COALESCE(:Phone, phone), full_name = COALESCE(:FullName, full_name)" +
             "WHERE id = :UserId", nativeQuery = true)
-    int changeUserInfo(@Param("Email") String email, @Param("Phone") String username,
+    void changeUserInfo(@Param("Email") String email, @Param("Phone") String username,
                        @Param("UserId") Long userId, @Param("FullName") String fullName);
 
     @Query(value = "SELECT * FROM users WHERE username = :username",
@@ -30,6 +31,10 @@ public interface UserRepository extends JpaRepository<User, Long> {
     @Query(value = "SELECT * FROM orders WHERE user_id = :userId",
     nativeQuery = true)
     Set<Order> findOrdersById(@Param("userId") Long id);
+
+    @Query(value = "SELECT * FROM automobiles WHERE user_id = :userId",
+            nativeQuery = true)
+    Set<Auto> findCarsById(@Param("userId") Long id);
 
     Boolean existsByUsername(String username);
 

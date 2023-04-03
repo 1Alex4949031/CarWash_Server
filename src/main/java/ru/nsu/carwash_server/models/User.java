@@ -46,7 +46,7 @@ public class User {
     @NotBlank
     private String password;
 
-    @OneToMany(mappedBy = "users")
+    @OneToMany(mappedBy = "user")
     private Set<Auto> auto;
 
     private String fullName;

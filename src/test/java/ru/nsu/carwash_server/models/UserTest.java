@@ -2,6 +2,7 @@ package ru.nsu.carwash_server.models;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import ru.nsu.carwash_server.models.constants.ERole;
 
 import java.util.HashSet;
 import java.util.Set;

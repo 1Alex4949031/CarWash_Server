@@ -39,7 +39,6 @@ public class AdminController {
         return "Admin Board.";
     }
 
-
     @GetMapping("/findUserByTelephone")
     @PreAuthorize("hasRole('MODERATOR') or hasRole('ADMIN')")
     public ResponseEntity<?> findByTelephone(@Valid @RequestBody FindingUserInfo userInfoRequest) {

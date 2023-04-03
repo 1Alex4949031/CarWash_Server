@@ -1,8 +1,6 @@
 package ru.nsu.carwash_server.payload.response;
 
 import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -14,7 +12,8 @@ public class OrderInfoResponse {
     private Long id;
     private Double price;
     private String name;
-    private Date date;
+    private Date startTime;
+    private Date endTime;
     private String administrator;
     private String specialist;
     private int boxNumber;

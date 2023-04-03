@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import ru.nsu.carwash_server.models.exception.TokenRefreshException;
-import ru.nsu.carwash_server.models.ERole;
+import ru.nsu.carwash_server.models.constants.ERole;
 import ru.nsu.carwash_server.models.RefreshToken;
 import ru.nsu.carwash_server.models.Role;
 import ru.nsu.carwash_server.models.User;

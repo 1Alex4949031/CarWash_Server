@@ -30,7 +30,7 @@ public class Auto {
     private String carNumber;
     private String carClass; //1 -Седан,хэтчбек;2 -Кроссовер; 3 - Кроссовер,джип
     @ManyToOne
-    private User users;
+    private User user;
 
     public Auto(Long id) {
         this.id = id;
@@ -39,6 +39,6 @@ public class Auto {
     public Auto(String carNumber, String carClass, User user) {
         setCarClass(carClass);
         setCarNumber(carNumber);
-        setUsers(user);
+        setUser(user);
     }
 }

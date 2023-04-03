@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import ru.nsu.carwash_server.models.Auto;
+import ru.nsu.carwash_server.models.BookedTime;
 import ru.nsu.carwash_server.models.Order;
 import ru.nsu.carwash_server.models.User;
 import ru.nsu.carwash_server.payload.request.BookingOrderRequest;
@@ -16,9 +17,11 @@ import ru.nsu.carwash_server.payload.request.NewOrderRequest;
 import ru.nsu.carwash_server.payload.response.MessageResponse;
 import ru.nsu.carwash_server.payload.response.OrderInfoResponse;
 import ru.nsu.carwash_server.repository.OrdersRepository;
+import ru.nsu.carwash_server.repository.ScheduleRepository;
 import ru.nsu.carwash_server.security.services.UserDetailsImpl;
 
 import javax.validation.Valid;
+import java.util.Date;
 
 
 @CrossOrigin(origins = "*", maxAge = 3600)
@@ -27,6 +30,8 @@ import javax.validation.Valid;
 public class OrderController {
     @Autowired
     OrdersRepository ordersRepository;
+    @Autowired
+    ScheduleRepository scheduleRepository;
 
     @PostMapping("/newOrder")
     public ResponseEntity<?> createOrder(@Valid @RequestBody NewOrderRequest newOrderRequest) {
@@ -39,13 +44,19 @@ public class OrderController {
     public ResponseEntity<?> newUserOrder(@Valid @RequestBody BookingOrderRequest bookingOrderRequest) {
         UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         User user = new User(userDetails.getId());
-        Order newOrder = new Order(bookingOrderRequest.getName(), bookingOrderRequest.getPrice(), bookingOrderRequest.getDate(),
-                bookingOrderRequest.getAdministrator(), bookingOrderRequest.getSpecialist(), bookingOrderRequest.getBoxNumber(),
+        var startTime = bookingOrderRequest.getStartTime();
+        var boxNumber = bookingOrderRequest.getBoxNumber();
+        Order newOrder = new Order(bookingOrderRequest.getName(), bookingOrderRequest.getPrice(),
+                startTime, bookingOrderRequest.getEndTime(),
+                bookingOrderRequest.getAdministrator(), bookingOrderRequest.getSpecialist(),boxNumber,
                 bookingOrderRequest.getBonuses(), true, false,
                 bookingOrderRequest.getComments(),new Auto(bookingOrderRequest.getAutoId()), user);
+        BookedTime bookedTime = new BookedTime(startTime, bookingOrderRequest.getEndTime(),
+                boxNumber, newOrder);
         ordersRepository.save(newOrder);
+        scheduleRepository.save(bookedTime);
         return ResponseEntity.ok(new OrderInfoResponse(newOrder.getId(), newOrder.getPrice(), newOrder.getName(),
-                newOrder.getDate(), newOrder.getAdministrator(), newOrder.getSpecialist(),
+                newOrder.getStartTime(),bookedTime.getEndTime(), newOrder.getAdministrator(), newOrder.getSpecialist(),
                 newOrder.getBoxNumber(), newOrder.getBonuses(), newOrder.isBooked(),
                 newOrder.isExecuted(), newOrder.getComments(), newOrder.getUser().getId()));
     }
@@ -58,7 +69,8 @@ public class OrderController {
                 bookingOrderRequest.getPrice(), bookingOrderRequest.getAutoId(),
                 bookingOrderRequest.getSpecialist(), bookingOrderRequest.getAdministrator(),
                 bookingOrderRequest.getBoxNumber(), bookingOrderRequest.getOrderId(), bookingOrderRequest.getBonuses(),
-                bookingOrderRequest.getComments(), bookingOrderRequest.isExecuted());
+                bookingOrderRequest.getComments(), bookingOrderRequest.isExecuted(),
+                bookingOrderRequest.getStartTime(), bookingOrderRequest.getEndTime());
         return ResponseEntity.ok(new MessageResponse("Пользователь " + userId
                 + " забронировал заказ " + bookingOrderRequest.getOrderId() + " с машиной: "
                 + bookingOrderRequest.getAutoId()));
