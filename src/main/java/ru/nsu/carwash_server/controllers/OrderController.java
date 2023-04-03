@@ -9,7 +9,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import ru.nsu.carwash_server.models.Auto;
-import ru.nsu.carwash_server.models.BookedTime;
 import ru.nsu.carwash_server.models.Order;
 import ru.nsu.carwash_server.models.User;
 import ru.nsu.carwash_server.payload.request.BookingOrderRequest;
@@ -17,11 +16,9 @@ import ru.nsu.carwash_server.payload.request.NewOrderRequest;
 import ru.nsu.carwash_server.payload.response.MessageResponse;
 import ru.nsu.carwash_server.payload.response.OrderInfoResponse;
 import ru.nsu.carwash_server.repository.OrdersRepository;
-import ru.nsu.carwash_server.repository.ScheduleRepository;
 import ru.nsu.carwash_server.security.services.UserDetailsImpl;
 
 import javax.validation.Valid;
-import java.util.Date;
 
 
 @CrossOrigin(origins = "*", maxAge = 3600)
@@ -30,9 +27,6 @@ import java.util.Date;
 public class OrderController {
     @Autowired
     OrdersRepository ordersRepository;
-    @Autowired
-    ScheduleRepository scheduleRepository;
-
     @PostMapping("/newOrder")
     public ResponseEntity<?> createOrder(@Valid @RequestBody NewOrderRequest newOrderRequest) {
         Order newOrder = new Order(newOrderRequest.getName(), newOrderRequest.getPrice(), newOrderRequest.getDate());
@@ -51,12 +45,9 @@ public class OrderController {
                 bookingOrderRequest.getAdministrator(), bookingOrderRequest.getSpecialist(),boxNumber,
                 bookingOrderRequest.getBonuses(), true, false,
                 bookingOrderRequest.getComments(),new Auto(bookingOrderRequest.getAutoId()), user);
-        BookedTime bookedTime = new BookedTime(startTime, bookingOrderRequest.getEndTime(),
-                boxNumber, newOrder);
         ordersRepository.save(newOrder);
-        scheduleRepository.save(bookedTime);
         return ResponseEntity.ok(new OrderInfoResponse(newOrder.getId(), newOrder.getPrice(), newOrder.getName(),
-                newOrder.getStartTime(),bookedTime.getEndTime(), newOrder.getAdministrator(), newOrder.getSpecialist(),
+                newOrder.getStartTime(),newOrder.getEndTime(), newOrder.getAdministrator(), newOrder.getSpecialist(),
                 newOrder.getBoxNumber(), newOrder.getBonuses(), newOrder.isBooked(),
                 newOrder.isExecuted(), newOrder.getComments(), newOrder.getUser().getId()));
     }

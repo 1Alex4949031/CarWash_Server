@@ -17,7 +17,7 @@ public class OrderTests {
         Order order = new Order(name, price, date);
         assertEquals(order.getName(), name);
         assertEquals(order.getPrice(), price, 0.0);
-        assertEquals(order.getDate(), date);
+        assertEquals(order.getStartTime(), date);
     }
 
     @Test

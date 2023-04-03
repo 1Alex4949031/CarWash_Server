@@ -7,4 +7,5 @@ import lombok.Setter;
 @Getter @Setter
 public class NewCarRequest {
     private String carNumber;
-    private String carClass;}
+    private String carClass;
+}
