@@ -1,15 +1,16 @@
 package ru.nsu.carwash_server.payload.request;
 
+import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Data;
 import ru.nsu.carwash_server.models.Role;
 
 import javax.validation.constraints.Email;
 import java.util.Set;
 
-@Getter @Setter
+@Data
 @Builder
+@AllArgsConstructor
 public class UpdateUserInfoRequest {
     @Email
     private String email;

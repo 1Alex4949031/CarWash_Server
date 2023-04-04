@@ -9,6 +9,7 @@ import ru.nsu.carwash_server.models.Order;
 
 import javax.transaction.Transactional;
 import java.util.Date;
+import java.util.Set;
 
 @Repository
 public interface OrdersRepository extends JpaRepository<Order, Long> {
@@ -29,4 +30,17 @@ public interface OrdersRepository extends JpaRepository<Order, Long> {
                          @Param("Bonuses") int bonuses, @Param("Comments") String comments,
                          @Param("Executed") Boolean executed, @Param("StartTime") Date startTime,
                          @Param("EndTime") Date endTime);
+
+    //@Query(value = "SELECT * FROM orders WHERE start_time >= :StartTime " +
+            //"AND end_time <= :EndTime", nativeQuery = true)
+    //@Query(value = "SELECT * FROM orders WHERE start_time " +
+    //        "BETWEEN :StartTime AND :EndTime" +
+    //        " AND end_time BETWEEN :StartTime AND :EndTime", nativeQuery = true)
+    //Set<Order> getBookedOrdersInOneDay(@Param("StartTime") Date startTime, @Param("EndTime") Date endTime);
+
+    @Query(value = "SELECT * FROM orders WHERE start_time " +
+            "BETWEEN :StartTime AND :EndTime " +    // Пробел добавлен здесь
+            " AND end_time BETWEEN :StartTime AND :EndTime", nativeQuery = true)
+    Set<Order> getBookedOrdersInOneDay(@Param("StartTime") Date startTime, @Param("EndTime") Date endTime);
+
 }

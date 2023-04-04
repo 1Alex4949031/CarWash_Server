@@ -2,6 +2,7 @@ package ru.nsu.carwash_server.models;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 
@@ -19,17 +20,17 @@ import java.util.Date;
 
 
 @Entity
-@Setter @Getter
-@ToString
-@AllArgsConstructor
 @Table(name = "orders")
+@NoArgsConstructor
+@ToString
+@Getter
+@Setter
+@AllArgsConstructor
 public class Order {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    @NotNull
     private Double price;
-    @NotBlank
     private String name;
     private Date startTime;
     private Date endTime;
@@ -46,9 +47,6 @@ public class Order {
     @ManyToOne
     @JoinColumn(name = "user_id", referencedColumnName = "id")
     private User user;
-
-    public Order() {
-    }
 
     public Order(String name, double price, Date startTime, Date endTime, String administrator, String specialist,
                  int boxNumber, int bonuses, boolean booked, boolean executed, String comments,
@@ -72,5 +70,11 @@ public class Order {
         this.name = name;
         this.price = price;
         this.startTime = startTime;
+    }
+
+    public String startAndEndTimeToString(){
+        return ("order Id: " + this.getId()
+                + "; startTime: " + this.startTime + ";"
+                + " endTime: " + this.endTime + "; boxNumber: " + this.boxNumber + ";");
     }
 }

@@ -1,21 +1,18 @@
 package ru.nsu.carwash_server.payload.request;
 
-import lombok.Builder;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.AllArgsConstructor;
+import lombok.Data;
 
-import javax.validation.constraints.NotNull;
 import java.util.Date;
 
-@Getter @Setter
-@Builder
+@Data
+@AllArgsConstructor
 public class BookingOrderRequest {
     private Double price;
     private String name;
     private Date startTime;
     private String administrator;
     private String specialist;
-    @NotNull
     private Long autoId;
     private int boxNumber;
     private int bonuses;

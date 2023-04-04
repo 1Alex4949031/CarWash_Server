@@ -2,6 +2,7 @@ package ru.nsu.carwash_server.models;
 
 
 import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -15,8 +16,6 @@ import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 
-@Getter @Setter
-@AllArgsConstructor
 @Entity(name = "automobiles")
 @Table(name = "automobiles",
         uniqueConstraints = {
@@ -24,6 +23,8 @@ import javax.persistence.UniqueConstraint;
         })
 @NoArgsConstructor
 @ToString
+@Getter @Setter
+@AllArgsConstructor
 public class Auto {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

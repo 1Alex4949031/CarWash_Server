@@ -1,12 +1,11 @@
 package ru.nsu.carwash_server.payload.response;
 
 import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Data;
 
 import java.util.Date;
 
-@Getter @Setter
+@Data
 @AllArgsConstructor
 public class OrderInfoResponse {
     private Long id;

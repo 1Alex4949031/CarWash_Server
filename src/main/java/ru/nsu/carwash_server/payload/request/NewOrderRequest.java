@@ -3,13 +3,11 @@ package ru.nsu.carwash_server.payload.request;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Getter;
-import lombok.Setter;
-
+import lombok.Data;
 
 import java.util.Date;
 
-@Getter @Setter
+@Data
 @AllArgsConstructor
 @Builder
 public class NewOrderRequest {

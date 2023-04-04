@@ -1,11 +1,12 @@
 package ru.nsu.carwash_server.payload.response;
 
-import lombok.Getter;
-import lombok.Setter;
+import lombok.AllArgsConstructor;
+import lombok.Data;
 
 import java.util.List;
 
-@Getter @Setter
+@Data
+@AllArgsConstructor
 public class JwtResponse {
 	private String token;
 	private String type = "Bearer";
@@ -13,7 +14,6 @@ public class JwtResponse {
 	private Long id;
 	private String username;
 	private List<String> roles;
-
 	public JwtResponse(String accessToken, String refreshToken, Long id, String username, List<String> roles) {
 		this.token = accessToken;
 		this.refreshToken = refreshToken;

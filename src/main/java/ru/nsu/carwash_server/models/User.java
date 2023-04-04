@@ -1,11 +1,13 @@
 package ru.nsu.carwash_server.models;
 
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
@@ -16,7 +18,6 @@ import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
-import javax.persistence.UniqueConstraint;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
 import java.util.HashSet;
@@ -24,20 +25,17 @@ import java.util.Set;
 
 
 @Entity
-@ToString
-@Getter
-@Setter
+@Table(name = "users")
 @NoArgsConstructor
-@Table(name = "users",
-        uniqueConstraints = {
-                @UniqueConstraint(columnNames = "username"),
-                @UniqueConstraint(columnNames = "email")
-        })
+@ToString
+@Getter @Setter
+@AllArgsConstructor
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     @NotBlank
+    @Column(nullable = false, unique = true)
     private String username;
     @NotBlank
     private String phone;
@@ -45,10 +43,12 @@ public class User {
     @ToString.Exclude
     private Set<Order> orders;
     @Email
+    @Column(unique = true)
     private String email;
     private int bonuses;
     @NotBlank
     @ToString.Exclude
+    @Column(nullable = false, unique = true)
     private String password;
     @OneToMany(mappedBy = "user")
     @ToString.Exclude

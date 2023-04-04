@@ -1,9 +1,8 @@
 package ru.nsu.carwash_server.payload.response;
 
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Data;
 
-@Getter @Setter
+@Data
 public class TokenRefreshResponse {
   private String accessToken;
   private String refreshToken;

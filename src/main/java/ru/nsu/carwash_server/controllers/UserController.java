@@ -65,8 +65,7 @@ public class UserController {
         Long userId = userDetails.getId();
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("Error: Пользователя с таким телефоном не существует"));
-        Set<Order> orders = user.getOrders();
-        Set<String> setString = orders.stream()
+        Set<String> setString = user.getOrders().stream()
                 .map(Object::toString)
                 .collect(Collectors.toSet());
         return ResponseEntity.ok(new UserOrdersResponse(setString, userId, user.getUsername()));
@@ -78,8 +77,7 @@ public class UserController {
         Long userId = userDetails.getId();
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("Error: Пользователя с таким телефоном не существует"));
-        Set<Auto> car = user.getAuto();
-        Set<String> autoSetString = car.stream()
+        Set<String> autoSetString = user.getAuto().stream()
                 .map(Object::toString)
                 .collect(Collectors.toSet());
         return ResponseEntity.ok(new UserCarsResponse(autoSetString, user.getId(),

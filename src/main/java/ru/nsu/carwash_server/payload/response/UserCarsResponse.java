@@ -1,13 +1,11 @@
 package ru.nsu.carwash_server.payload.response;
 
 import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.Setter;
-import ru.nsu.carwash_server.models.Auto;
+import lombok.Data;
 
 import java.util.Set;
 
-@Getter @Setter
+@Data
 @AllArgsConstructor
 public class UserCarsResponse {
     private Set<String> autoList;

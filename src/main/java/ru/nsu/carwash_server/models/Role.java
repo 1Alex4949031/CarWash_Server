@@ -1,7 +1,9 @@
 package ru.nsu.carwash_server.models;
 
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 import ru.nsu.carwash_server.models.constants.ERole;
@@ -14,11 +16,12 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
-@Getter
-@Setter
 @Entity
-@ToString
 @Table(name = "roles")
+@NoArgsConstructor
+@ToString
+@Getter @Setter
+@AllArgsConstructor
 public class Role {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -26,10 +29,6 @@ public class Role {
 
     @Enumerated(EnumType.STRING)
     private ERole name;
-
-    public Role() {
-
-    }
 
     public Role(ERole name) {
         this.name = name;

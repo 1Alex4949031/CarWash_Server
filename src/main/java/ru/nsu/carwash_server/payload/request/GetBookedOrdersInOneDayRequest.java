@@ -1,14 +1,13 @@
 package ru.nsu.carwash_server.payload.request;
 
-
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
+
+import java.util.Date;
 
 @Data
 @AllArgsConstructor
-@Builder
-public class NewCarRequest {
-    private String carNumber;
-    private String carClass;
+public class GetBookedOrdersInOneDayRequest {
+    private Date startTime;
+    private Date endTime;
 }
