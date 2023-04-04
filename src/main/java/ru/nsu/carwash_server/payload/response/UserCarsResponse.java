@@ -10,7 +10,7 @@ import java.util.Set;
 @Getter @Setter
 @AllArgsConstructor
 public class UserCarsResponse {
-    private Set<Auto> autoList;
+    private Set<String> autoList;
     private Long userId;
     private String username;
 }

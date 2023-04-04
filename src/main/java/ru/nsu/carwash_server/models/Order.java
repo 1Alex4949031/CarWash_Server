@@ -3,6 +3,7 @@ package ru.nsu.carwash_server.models;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -19,16 +20,15 @@ import java.util.Date;
 
 @Entity
 @Setter @Getter
+@ToString
 @AllArgsConstructor
 @Table(name = "orders")
 public class Order {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
     @NotNull
     private Double price;
-
     @NotBlank
     private String name;
     private Date startTime;
@@ -40,7 +40,6 @@ public class Order {
     private boolean booked;
     private boolean executed = false;
     private String comments;
-
     @OneToOne
     @JoinColumn(name = "auto_id", referencedColumnName = "id")
     private Auto auto;
@@ -53,7 +52,7 @@ public class Order {
 
     public Order(String name, double price, Date startTime, Date endTime, String administrator, String specialist,
                  int boxNumber, int bonuses, boolean booked, boolean executed, String comments,
-                 Auto auto, User user){
+                 Auto auto, User user) {
         this.name = name;
         this.price = price;
         this.startTime = startTime;
@@ -68,6 +67,7 @@ public class Order {
         this.auto = auto;
         this.user = user;
     }
+
     public Order(String name, double price, Date startTime) {
         this.name = name;
         this.price = price;

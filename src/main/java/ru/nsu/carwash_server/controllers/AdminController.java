@@ -49,11 +49,11 @@ public class AdminController {
                 user.getBonuses(), user.getRoles()));
     }
 
-    @GetMapping("/getUserOrdersByAdmin")
+    /*@GetMapping("/getUserOrdersByAdmin")
     @PreAuthorize("hasRole('MODERATOR') or hasRole('ADMIN')")
     public ResponseEntity<?> getUserOrders(@Valid @RequestBody FindingUserInfo userInfoRequest) {
         User user = userRepository.findByUsername(userInfoRequest.getUsername())
                 .orElseThrow(() -> new RuntimeException("Error: Пользователя с таким телефоном не существует"));
         return ResponseEntity.ok(new UserOrdersResponse(userRepository.findOrdersById(user.getId()), user.getUsername()));
-    }
+    }*/
 }

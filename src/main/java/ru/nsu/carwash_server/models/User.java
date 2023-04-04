@@ -2,7 +2,9 @@ package ru.nsu.carwash_server.models;
 
 
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.ToString;
 
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -22,7 +24,10 @@ import java.util.Set;
 
 
 @Entity
-@Getter @Setter
+@ToString
+@Getter
+@Setter
+@NoArgsConstructor
 @Table(name = "users",
         uniqueConstraints = {
                 @UniqueConstraint(columnNames = "username"),
@@ -32,34 +37,29 @@ public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
     @NotBlank
     private String username;
-
     @NotBlank
     private String phone;
     @OneToMany(mappedBy = "user")
+    @ToString.Exclude
     private Set<Order> orders;
     @Email
     private String email;
     private int bonuses;
     @NotBlank
+    @ToString.Exclude
     private String password;
-
     @OneToMany(mappedBy = "user")
+    @ToString.Exclude
     private Set<Auto> auto;
-
     private String fullName;
-
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(name = "user_roles",
             joinColumns = @JoinColumn(name = "user_id"),
             inverseJoinColumns = @JoinColumn(name = "role_id"))
+    @ToString.Exclude
     private Set<Role> roles = new HashSet<>();
-
-    public User() {
-    }
-
     public User(Long id) {
         this.id = id;
     }

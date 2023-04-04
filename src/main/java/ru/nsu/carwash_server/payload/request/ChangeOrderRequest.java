@@ -1,5 +1,6 @@
 package ru.nsu.carwash_server.payload.request;
 
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
@@ -8,8 +9,10 @@ import javax.validation.constraints.NotNull;
 import java.util.Date;
 
 @Getter @Setter
+@AllArgsConstructor
 @Builder
-public class BookingOrderRequest {
+public class ChangeOrderRequest {
+    private Long orderId;
     private Double price;
     private String name;
     private Date startTime;

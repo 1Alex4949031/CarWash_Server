@@ -3,6 +3,7 @@ package ru.nsu.carwash_server.models;
 
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 import ru.nsu.carwash_server.models.constants.ERole;
 
 import javax.persistence.Entity;
@@ -13,8 +14,10 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
-@Getter @Setter
+@Getter
+@Setter
 @Entity
+@ToString
 @Table(name = "roles")
 public class Role {
     @Id

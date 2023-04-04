@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import ru.nsu.carwash_server.models.Auto;
+import ru.nsu.carwash_server.models.Order;
 import ru.nsu.carwash_server.models.User;
 import ru.nsu.carwash_server.payload.request.NewCarRequest;
 import ru.nsu.carwash_server.payload.request.UpdateUserInfoRequest;
@@ -23,6 +24,8 @@ import ru.nsu.carwash_server.repository.UserRepository;
 import ru.nsu.carwash_server.security.services.UserDetailsImpl;
 
 import javax.validation.Valid;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
@@ -50,7 +53,7 @@ public class UserController {
         UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         Long userId = userDetails.getId();
         User user = new User(userId);
-        Auto userAuto = new Auto(newCarRequest.getCarNumber(), newCarRequest.getCarClass(),user);
+        Auto userAuto = new Auto(newCarRequest.getCarNumber(), newCarRequest.getCarClass(), user);
         carRepository.save(userAuto);
         return ResponseEntity.ok(new NewCarResponse(userAuto.getCarNumber(), userAuto.getId(),
                 userAuto.getUser().getId(), userAuto.getCarClass()));
@@ -59,17 +62,27 @@ public class UserController {
     @GetMapping("/getUserOrders")
     public ResponseEntity<?> getUserOrders() {
         UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        User user = userRepository.findById(userDetails.getId())
+        Long userId = userDetails.getId();
+        User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("Error: Пользователя с таким телефоном не существует"));
-        return ResponseEntity.ok(new UserOrdersResponse(userRepository.findOrdersById(user.getId()), user.getUsername()));
+        Set<Order> orders = user.getOrders();
+        Set<String> setString = orders.stream()
+                .map(Object::toString)
+                .collect(Collectors.toSet());
+        return ResponseEntity.ok(new UserOrdersResponse(setString, userId, user.getUsername()));
     }
 
     @GetMapping("/getUserCars")
     public ResponseEntity<?> getUserCars() {
         UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        User user = userRepository.findById(userDetails.getId())
+        Long userId = userDetails.getId();
+        User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("Error: Пользователя с таким телефоном не существует"));
-        return ResponseEntity.ok(new UserCarsResponse(userRepository.findCarsById(user.getId()), user.getId(),
+        Set<Auto> car = user.getAuto();
+        Set<String> autoSetString = car.stream()
+                .map(Object::toString)
+                .collect(Collectors.toSet());
+        return ResponseEntity.ok(new UserCarsResponse(autoSetString, user.getId(),
                 user.getUsername()));
     }
 }

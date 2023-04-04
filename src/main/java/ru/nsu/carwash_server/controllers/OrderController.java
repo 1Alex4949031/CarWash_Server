@@ -12,9 +12,11 @@ import ru.nsu.carwash_server.models.Auto;
 import ru.nsu.carwash_server.models.Order;
 import ru.nsu.carwash_server.models.User;
 import ru.nsu.carwash_server.payload.request.BookingOrderRequest;
+import ru.nsu.carwash_server.payload.request.ChangeOrderRequest;
 import ru.nsu.carwash_server.payload.request.NewOrderRequest;
 import ru.nsu.carwash_server.payload.response.MessageResponse;
 import ru.nsu.carwash_server.payload.response.OrderInfoResponse;
+import ru.nsu.carwash_server.payload.response.UpdateOrderInfoResponse;
 import ru.nsu.carwash_server.repository.OrdersRepository;
 import ru.nsu.carwash_server.security.services.UserDetailsImpl;
 
@@ -53,17 +55,16 @@ public class OrderController {
     }
 
     @PostMapping("/updateOrderInfo")
-    public ResponseEntity<?> updateOrderInfo(@Valid @RequestBody BookingOrderRequest bookingOrderRequest) {
+    public ResponseEntity<?> updateOrderInfo(@Valid @RequestBody ChangeOrderRequest changeOrderRequest) {
         UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         Long userId = userDetails.getId();
         ordersRepository.updateOrderInfo(true, userId,
-                bookingOrderRequest.getPrice(), bookingOrderRequest.getAutoId(),
-                bookingOrderRequest.getSpecialist(), bookingOrderRequest.getAdministrator(),
-                bookingOrderRequest.getBoxNumber(), bookingOrderRequest.getOrderId(), bookingOrderRequest.getBonuses(),
-                bookingOrderRequest.getComments(), bookingOrderRequest.isExecuted(),
-                bookingOrderRequest.getStartTime(), bookingOrderRequest.getEndTime());
-        return ResponseEntity.ok(new MessageResponse("Пользователь " + userId
-                + " забронировал заказ " + bookingOrderRequest.getOrderId() + " с машиной: "
-                + bookingOrderRequest.getAutoId()));
+                changeOrderRequest.getPrice(), changeOrderRequest.getAutoId(),
+                changeOrderRequest.getSpecialist(), changeOrderRequest.getAdministrator(),
+                changeOrderRequest.getBoxNumber(), changeOrderRequest.getOrderId(),
+                changeOrderRequest.getBonuses(), changeOrderRequest.getComments(),
+                changeOrderRequest.isExecuted(), changeOrderRequest.getStartTime(),
+                changeOrderRequest.getEndTime());
+        return ResponseEntity.ok(changeOrderRequest);
     }
 }
