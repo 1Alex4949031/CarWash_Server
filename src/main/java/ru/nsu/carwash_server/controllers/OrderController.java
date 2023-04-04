@@ -4,7 +4,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -19,7 +18,6 @@ import ru.nsu.carwash_server.payload.request.NewOrderRequest;
 import ru.nsu.carwash_server.payload.response.GetBookedOrdersInOneDayResponse;
 import ru.nsu.carwash_server.payload.response.MessageResponse;
 import ru.nsu.carwash_server.payload.response.OrderInfoResponse;
-import ru.nsu.carwash_server.payload.response.UpdateOrderInfoResponse;
 import ru.nsu.carwash_server.repository.OrdersRepository;
 import ru.nsu.carwash_server.security.services.UserDetailsImpl;
 
@@ -74,7 +72,7 @@ public class OrderController {
         return ResponseEntity.ok(changeOrderRequest);
     }
 
-    @GetMapping("/getBookedTimeInOneDay")
+    @PostMapping("/getBookedTimeInOneDay")
     public ResponseEntity<?> getBookedTimeInOneDay(@Valid @RequestBody GetBookedOrdersInOneDayRequest getBookedOrdersInOneDayRequest) {
         Set<String> orderStrings = ordersRepository
                 .getBookedOrdersInOneDay(getBookedOrdersInOneDayRequest.getStartTime(),

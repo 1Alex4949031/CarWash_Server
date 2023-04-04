@@ -1,12 +1,17 @@
 package ru.nsu.carwash_server.payload.request;
 
 
-import lombok.Data;
+import javax.validation.constraints.NotBlank;
 
-import javax.validation.constraints.*;
-
-@Data
 public class TokenRefreshRequest {
   @NotBlank
   private String refreshToken;
+
+  public String getRefreshToken() {
+    return refreshToken;
+  }
+
+  public void setRefreshToken(String refreshToken) {
+    this.refreshToken = refreshToken;
+  }
 }

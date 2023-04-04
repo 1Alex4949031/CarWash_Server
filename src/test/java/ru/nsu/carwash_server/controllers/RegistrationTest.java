@@ -1,21 +1,6 @@
 package ru.nsu.carwash_server.controllers;
 
-import static org.hamcrest.Matchers.emptyString;
-import static org.hamcrest.Matchers.hasItem;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.not;
-import static org.junit.Assert.assertTrue;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.jayway.jsonpath.JsonPath;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,22 +12,38 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
-
+import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.transaction.annotation.Transactional;
 import ru.nsu.carwash_server.TestHelper;
 import ru.nsu.carwash_server.models.RefreshToken;
 import ru.nsu.carwash_server.models.Role;
 import ru.nsu.carwash_server.models.User;
 import ru.nsu.carwash_server.models.constants.ERole;
-import ru.nsu.carwash_server.payload.request.BookingOrderRequest;
 import ru.nsu.carwash_server.payload.request.LoginRequest;
+import ru.nsu.carwash_server.payload.request.NewCarRequest;
 import ru.nsu.carwash_server.payload.request.SignupRequest;
 import ru.nsu.carwash_server.payload.request.TokenRefreshRequest;
+import ru.nsu.carwash_server.repository.CarRepository;
 import ru.nsu.carwash_server.repository.RoleRepository;
 import ru.nsu.carwash_server.repository.UserRepository;
 import ru.nsu.carwash_server.security.jwt.JwtUtils;
 import ru.nsu.carwash_server.security.services.RefreshTokenService;
 import ru.nsu.carwash_server.security.services.UserDetailsImpl;
+
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import static org.hamcrest.Matchers.emptyString;
+import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.not;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
@@ -53,9 +54,13 @@ public class RegistrationTest {
     private static final String API_AUTH_SIGNIN = "/api/auth/signin";
     private static final String API_AUTH_SIGNUP = "/api/auth/signup";
     private static final String API_AUTH_REFRESHTOKEN = "/api/auth/refreshtoken";
+    private static final String API_USER_SAVENEWCAR = "/api/user/saveNewCar";
     private static final String API_AUTH_SIGNOUT = "/api/auth/signout";
     private static final String TEST_USERNAME = "testuser";
     private static final String TEST_PASSWORD = "testpassword";
+    private static final String TEST_CAR_NUMBER = "A322GG";
+    private static final String TEST_CAR_CLASS = "1";
+
 
     @Autowired
     private MockMvc mockMvc;
@@ -67,6 +72,9 @@ public class RegistrationTest {
     private RoleRepository roleRepository;
 
     @Autowired
+    private CarRepository carRepository;
+
+    @Autowired
     private PasswordEncoder encoder;
 
     @Autowired
@@ -74,6 +82,7 @@ public class RegistrationTest {
 
     @Autowired
     private RefreshTokenService refreshTokenService;
+
 
     private User getUser() {
         Role role = roleRepository.findByName(ERole.ROLE_USER)
@@ -86,24 +95,6 @@ public class RegistrationTest {
         return user;
     }
 
-    @Test
-    public void testAuthenticateUser() throws Exception {
-        getUser();
-
-        LoginRequest request = new LoginRequest(TEST_USERNAME, TEST_PASSWORD);
-
-        mockMvc.perform(post(API_AUTH_SIGNIN)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(TestHelper.asJsonString(request)))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.token", is(not(emptyString()))))
-                .andExpect(jsonPath("$.type", is("Bearer")))
-                .andExpect(jsonPath("$.refreshToken", is(not(emptyString()))))
-            .andExpect(jsonPath("$.id").isNumber())
-                .andExpect(jsonPath("$.username", is(TEST_USERNAME)))
-                .andExpect(jsonPath("$.roles").isArray())
-                .andExpect(jsonPath("$.roles", hasItem("ROLE_USER")));
-    }
     @Test
     public void testRegisterUser() throws Exception {
         Set<String> roles = new HashSet<>();
@@ -123,7 +114,32 @@ public class RegistrationTest {
         assertTrue(userRepository.existsByUsername(request.getUsername()));
     }
 
-    /*@Test
+    @Test
+    public void testAuthenticateUser() throws Exception {
+        getUser();
+
+        LoginRequest request = new LoginRequest(TEST_USERNAME, TEST_PASSWORD);
+
+        MvcResult result = mockMvc.perform(post(API_AUTH_SIGNIN)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(TestHelper.asJsonString(request)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.token", is(not(emptyString()))))
+                .andExpect(jsonPath("$.type", is("Bearer")))
+                .andExpect(jsonPath("$.refreshToken", is(not(emptyString()))))
+                .andExpect(jsonPath("$.id").isNumber())
+                .andExpect(jsonPath("$.username", is(TEST_USERNAME)))
+                .andExpect(jsonPath("$.roles").isArray())
+                .andExpect(jsonPath("$.roles", hasItem("ROLE_USER")))
+                .andReturn();
+        String token = JsonPath.read(result.getResponse().getContentAsString(), "$.token");
+        String type = JsonPath.read(result.getResponse().getContentAsString(), "$.type");
+        var id = JsonPath.read(result.getResponse().getContentAsString(), "$.id");
+        String username = JsonPath.read(result.getResponse().getContentAsString(), "$.username");
+        System.out.println(username + " " + id.toString() + " " + type);
+    }
+
+    @Test
     public void testRefreshToken() throws Exception {
         User user = getUser();
 
@@ -134,7 +150,8 @@ public class RegistrationTest {
         String token = jwtUtils.generateJwtToken(new UserDetailsImpl(user.getId(), user.getUsername(),
                 user.getPassword(), authorities));
         RefreshToken refreshToken = refreshTokenService.createRefreshToken(user.getId());
-        TokenRefreshRequest request = new TokenRefreshRequest(refreshToken.getToken());
+        TokenRefreshRequest request = new TokenRefreshRequest();
+        request.setRefreshToken(refreshToken.getToken());
 
         mockMvc.perform(post(API_AUTH_REFRESHTOKEN)
                         .contentType(MediaType.APPLICATION_JSON)
@@ -143,7 +160,7 @@ public class RegistrationTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.accessToken", is(not(emptyString()))))
                 .andExpect(jsonPath("$.refreshToken", is(not(emptyString()))));
-    }*/
+    }
 
     @Test
     public void testLogoutUser() throws Exception {
@@ -162,5 +179,90 @@ public class RegistrationTest {
                         .header("Authorization", "Bearer " + token))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.message", is("Log out successful!")));
+    }
+
+
+    @Test
+    public void saveNewCar() throws Exception {
+        getUser();
+
+        LoginRequest loginRequest = new LoginRequest(TEST_USERNAME, TEST_PASSWORD);
+
+        MvcResult resultOfLogin = mockMvc.perform(post(API_AUTH_SIGNIN)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(TestHelper.asJsonString(loginRequest)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.token", is(not(emptyString()))))
+                .andExpect(jsonPath("$.type", is("Bearer")))
+                .andExpect(jsonPath("$.refreshToken", is(not(emptyString()))))
+                .andExpect(jsonPath("$.id").isNumber())
+                .andExpect(jsonPath("$.username", is(TEST_USERNAME)))
+                .andExpect(jsonPath("$.roles").isArray())
+                .andExpect(jsonPath("$.roles", hasItem("ROLE_USER")))
+                .andReturn();
+
+        String token = JsonPath.read(resultOfLogin.getResponse().getContentAsString(), "$.token");
+        Integer userId = JsonPath.read(resultOfLogin.getResponse().getContentAsString(), "$.id");
+
+        NewCarRequest newCarRequest = new NewCarRequest(TEST_CAR_NUMBER, TEST_CAR_CLASS);
+
+
+        MvcResult resultOfSaveNewCar = mockMvc.perform(post(API_USER_SAVENEWCAR)
+                        .header("Authorization", "Bearer " + token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(TestHelper.asJsonString(newCarRequest)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.carNumber", is(TEST_CAR_NUMBER)))
+                .andExpect(jsonPath("$.carClass", is(TEST_CAR_CLASS)))
+                .andExpect(jsonPath("$.carId").isNumber())
+                .andExpect(jsonPath("$.userId").isNumber())
+                .andReturn();
+
+        Integer idFromNewCar = JsonPath.read(resultOfSaveNewCar.getResponse().getContentAsString(), "$.userId");
+        Integer carId = JsonPath.read(resultOfSaveNewCar.getResponse().getContentAsString(), "$.carId");
+
+        assertEquals(userId, idFromNewCar);
+    }
+
+    @Test
+    public void bookOrder() throws Exception {
+        getUser();
+
+        LoginRequest loginRequest = new LoginRequest(TEST_USERNAME, TEST_PASSWORD);
+
+        MvcResult resultOfLogin = mockMvc.perform(post(API_AUTH_SIGNIN)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(TestHelper.asJsonString(loginRequest)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.token", is(not(emptyString()))))
+                .andExpect(jsonPath("$.type", is("Bearer")))
+                .andExpect(jsonPath("$.refreshToken", is(not(emptyString()))))
+                .andExpect(jsonPath("$.id").isNumber())
+                .andExpect(jsonPath("$.username", is(TEST_USERNAME)))
+                .andExpect(jsonPath("$.roles").isArray())
+                .andExpect(jsonPath("$.roles", hasItem("ROLE_USER")))
+                .andReturn();
+
+        String token = JsonPath.read(resultOfLogin.getResponse().getContentAsString(), "$.token");
+        Integer userId = JsonPath.read(resultOfLogin.getResponse().getContentAsString(), "$.id");
+
+        NewCarRequest newCarRequest = new NewCarRequest(TEST_CAR_NUMBER, TEST_CAR_CLASS);
+
+
+        MvcResult resultOfSaveNewCar = mockMvc.perform(post(API_USER_SAVENEWCAR)
+                        .header("Authorization", "Bearer " + token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(TestHelper.asJsonString(newCarRequest)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.carNumber", is(TEST_CAR_NUMBER)))
+                .andExpect(jsonPath("$.carClass", is(TEST_CAR_CLASS)))
+                .andExpect(jsonPath("$.carId").isNumber())
+                .andExpect(jsonPath("$.userId").isNumber())
+                .andReturn();
+
+        Integer idFromNewCar = JsonPath.read(resultOfSaveNewCar.getResponse().getContentAsString(), "$.userId");
+        Integer carId = JsonPath.read(resultOfSaveNewCar.getResponse().getContentAsString(), "$.carId");
+
+        assertEquals(userId, idFromNewCar);
     }
 }

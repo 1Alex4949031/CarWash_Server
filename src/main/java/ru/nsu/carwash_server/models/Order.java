@@ -70,8 +70,8 @@ public class Order {
         this.startTime = startTime;
     }
 
-    public String startAndEndTimeToString(){
-        return (this.getId() + " " + this.startTime
-                + " " + this.endTime + " " + this.boxNumber);
+    public String startAndEndTimeToString() {
+        return (this.getId() + ";" + this.startTime + ";"
+                + this.endTime + ";" + this.boxNumber + ";");
     }
 }
