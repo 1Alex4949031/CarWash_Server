@@ -10,14 +10,14 @@ import java.util.Date;
 @Data
 @AllArgsConstructor
 @Builder
-public class ChangeOrderRequest {
+public class UpdateOrderInfoRequest {
+    @NotNull
     private Long orderId;
     private Double price;
     private String name;
     private Date startTime;
     private String administrator;
     private String specialist;
-    @NotNull
     private Long autoId;
     private int boxNumber;
     private int bonuses;

@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -22,7 +23,8 @@ import javax.persistence.UniqueConstraint;
         })
 @NoArgsConstructor
 @ToString
-@Getter @Setter
+@Getter
+@Setter
 @AllArgsConstructor
 public class Auto {
     @Id
@@ -30,7 +32,7 @@ public class Auto {
     private Long id;
     private String carNumber;
     private String carClass; //1 -Седан,хэтчбек;2 -Кроссовер; 3 - Кроссовер,джип
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.MERGE)
     @ToString.Exclude
     private User user;
 

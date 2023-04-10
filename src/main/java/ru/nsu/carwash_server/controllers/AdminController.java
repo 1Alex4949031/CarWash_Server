@@ -4,10 +4,8 @@ package ru.nsu.carwash_server.controllers;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -19,7 +17,6 @@ import ru.nsu.carwash_server.payload.response.UserOrdersResponse;
 import ru.nsu.carwash_server.repository.OrdersRepository;
 import ru.nsu.carwash_server.repository.RoleRepository;
 import ru.nsu.carwash_server.repository.UserRepository;
-import ru.nsu.carwash_server.security.services.UserDetailsImpl;
 
 import javax.validation.Valid;
 import java.util.Set;

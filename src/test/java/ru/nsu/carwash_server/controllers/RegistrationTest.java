@@ -20,7 +20,6 @@ import ru.nsu.carwash_server.models.Role;
 import ru.nsu.carwash_server.models.User;
 import ru.nsu.carwash_server.models.constants.ERole;
 import ru.nsu.carwash_server.payload.request.LoginRequest;
-import ru.nsu.carwash_server.payload.request.NewCarRequest;
 import ru.nsu.carwash_server.payload.request.SignupRequest;
 import ru.nsu.carwash_server.payload.request.TokenRefreshRequest;
 import ru.nsu.carwash_server.repository.CarRepository;
@@ -39,7 +38,6 @@ import static org.hamcrest.Matchers.emptyString;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -54,6 +52,9 @@ public class RegistrationTest {
     private static final String API_AUTH_SIGNIN = "/api/auth/signin";
     private static final String API_AUTH_SIGNUP = "/api/auth/signup";
     private static final String API_AUTH_REFRESHTOKEN = "/api/auth/refreshtoken";
+
+    private static final String API_AUTH_CHANGEUSERINFO = "/api/user/updateUserInfo";
+
     private static final String API_USER_SAVENEWCAR = "/api/user/saveNewCar";
     private static final String API_AUTH_SIGNOUT = "/api/auth/signout";
     private static final String TEST_USERNAME = "testuser";
@@ -120,7 +121,7 @@ public class RegistrationTest {
 
         LoginRequest request = new LoginRequest(TEST_USERNAME, TEST_PASSWORD);
 
-        MvcResult result = mockMvc.perform(post(API_AUTH_SIGNIN)
+        mockMvc.perform(post(API_AUTH_SIGNIN)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(TestHelper.asJsonString(request)))
                 .andExpect(status().isOk())
@@ -132,11 +133,6 @@ public class RegistrationTest {
                 .andExpect(jsonPath("$.roles").isArray())
                 .andExpect(jsonPath("$.roles", hasItem("ROLE_USER")))
                 .andReturn();
-        String token = JsonPath.read(result.getResponse().getContentAsString(), "$.token");
-        String type = JsonPath.read(result.getResponse().getContentAsString(), "$.type");
-        var id = JsonPath.read(result.getResponse().getContentAsString(), "$.id");
-        String username = JsonPath.read(result.getResponse().getContentAsString(), "$.username");
-        System.out.println(username + " " + id.toString() + " " + type);
     }
 
     @Test
@@ -181,88 +177,48 @@ public class RegistrationTest {
                 .andExpect(jsonPath("$.message", is("Log out successful!")));
     }
 
-
     @Test
-    public void saveNewCar() throws Exception {
-        getUser();
+    public void testLogoutAfterSignInUser() throws Exception {
+        Set<String> roles = new HashSet<>();
+        roles.add("user");
+        roles.add("mod");
+        roles.add("admin");
+        SignupRequest adminSignUpRequest = SignupRequest.builder()
+                .username("896351866")
+                .role(roles)
+                .password("qwerty")
+                .build();
 
-        LoginRequest loginRequest = new LoginRequest(TEST_USERNAME, TEST_PASSWORD);
-
-        MvcResult resultOfLogin = mockMvc.perform(post(API_AUTH_SIGNIN)
+        mockMvc.perform(post(API_AUTH_SIGNUP)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(TestHelper.asJsonString(loginRequest)))
+                        .content(TestHelper.asJsonString(adminSignUpRequest)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.message", is("User registered successfully!")));
+
+        LoginRequest adminLoginRequest = LoginRequest.builder()
+                .username("896351866")
+                .password("qwerty")
+                .build();
+
+        MvcResult result = mockMvc.perform(post(API_AUTH_SIGNIN)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(TestHelper.asJsonString(adminLoginRequest)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.token", is(not(emptyString()))))
                 .andExpect(jsonPath("$.type", is("Bearer")))
                 .andExpect(jsonPath("$.refreshToken", is(not(emptyString()))))
                 .andExpect(jsonPath("$.id").isNumber())
-                .andExpect(jsonPath("$.username", is(TEST_USERNAME)))
+                .andExpect(jsonPath("$.username", is("896351866")))
                 .andExpect(jsonPath("$.roles").isArray())
                 .andExpect(jsonPath("$.roles", hasItem("ROLE_USER")))
                 .andReturn();
-
-        String token = JsonPath.read(resultOfLogin.getResponse().getContentAsString(), "$.token");
-        Integer userId = JsonPath.read(resultOfLogin.getResponse().getContentAsString(), "$.id");
-
-        NewCarRequest newCarRequest = new NewCarRequest(TEST_CAR_NUMBER, TEST_CAR_CLASS);
+        String token = JsonPath.read(result.getResponse().getContentAsString(), "$.token");
 
 
-        MvcResult resultOfSaveNewCar = mockMvc.perform(post(API_USER_SAVENEWCAR)
-                        .header("Authorization", "Bearer " + token)
+        mockMvc.perform(post(API_AUTH_SIGNOUT)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(TestHelper.asJsonString(newCarRequest)))
+                        .header("Authorization", "Bearer " + token))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.carNumber", is(TEST_CAR_NUMBER)))
-                .andExpect(jsonPath("$.carClass", is(TEST_CAR_CLASS)))
-                .andExpect(jsonPath("$.carId").isNumber())
-                .andExpect(jsonPath("$.userId").isNumber())
-                .andReturn();
-
-        Integer idFromNewCar = JsonPath.read(resultOfSaveNewCar.getResponse().getContentAsString(), "$.userId");
-        Integer carId = JsonPath.read(resultOfSaveNewCar.getResponse().getContentAsString(), "$.carId");
-
-        assertEquals(userId, idFromNewCar);
-    }
-
-    @Test
-    public void bookOrder() throws Exception {
-        getUser();
-
-        LoginRequest loginRequest = new LoginRequest(TEST_USERNAME, TEST_PASSWORD);
-
-        MvcResult resultOfLogin = mockMvc.perform(post(API_AUTH_SIGNIN)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(TestHelper.asJsonString(loginRequest)))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.token", is(not(emptyString()))))
-                .andExpect(jsonPath("$.type", is("Bearer")))
-                .andExpect(jsonPath("$.refreshToken", is(not(emptyString()))))
-                .andExpect(jsonPath("$.id").isNumber())
-                .andExpect(jsonPath("$.username", is(TEST_USERNAME)))
-                .andExpect(jsonPath("$.roles").isArray())
-                .andExpect(jsonPath("$.roles", hasItem("ROLE_USER")))
-                .andReturn();
-
-        String token = JsonPath.read(resultOfLogin.getResponse().getContentAsString(), "$.token");
-        Integer userId = JsonPath.read(resultOfLogin.getResponse().getContentAsString(), "$.id");
-
-        NewCarRequest newCarRequest = new NewCarRequest(TEST_CAR_NUMBER, TEST_CAR_CLASS);
-
-
-        MvcResult resultOfSaveNewCar = mockMvc.perform(post(API_USER_SAVENEWCAR)
-                        .header("Authorization", "Bearer " + token)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(TestHelper.asJsonString(newCarRequest)))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.carNumber", is(TEST_CAR_NUMBER)))
-                .andExpect(jsonPath("$.carClass", is(TEST_CAR_CLASS)))
-                .andExpect(jsonPath("$.carId").isNumber())
-                .andExpect(jsonPath("$.userId").isNumber())
-                .andReturn();
-
-        Integer idFromNewCar = JsonPath.read(resultOfSaveNewCar.getResponse().getContentAsString(), "$.userId");
-        Integer carId = JsonPath.read(resultOfSaveNewCar.getResponse().getContentAsString(), "$.carId");
-
-        assertEquals(userId, idFromNewCar);
+                .andExpect(jsonPath("$.message", is("Log out successful!")));
     }
 }

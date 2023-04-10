@@ -66,7 +66,7 @@ public class UserController {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("Error: Пользователя с таким телефоном не существует"));
         Set<String> setString = user.getOrders().stream()
-                .map(Object::toString)
+                .map(Order::timeAndNameToString)
                 .collect(Collectors.toSet());
         return ResponseEntity.ok(new UserOrdersResponse(setString, userId, user.getUsername()));
     }

@@ -1,10 +1,10 @@
 package ru.nsu.carwash_server.payload.request;
 
 
-import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 
 public class TokenRefreshRequest {
-  @NotBlank
+  @NotNull
   private String refreshToken;
 
   public String getRefreshToken() {

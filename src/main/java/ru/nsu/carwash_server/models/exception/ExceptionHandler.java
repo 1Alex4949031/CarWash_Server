@@ -6,7 +6,6 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 @RestControllerAdvice
 public class ExceptionHandler {
-
     @org.springframework.web.bind.annotation.ExceptionHandler(TokenRefreshException.class)
     @ResponseStatus(HttpStatus.UNAUTHORIZED)
     public void handle() {

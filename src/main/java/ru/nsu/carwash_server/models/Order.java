@@ -6,6 +6,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -39,10 +40,10 @@ public class Order {
     private boolean booked;
     private boolean executed = false;
     private String comments;
-    @OneToOne
+    @OneToOne(cascade = CascadeType.MERGE)
     @JoinColumn(name = "auto_id", referencedColumnName = "id")
     private Auto auto;
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.MERGE)
     @JoinColumn(name = "user_id", referencedColumnName = "id")
     private User user;
 
@@ -71,6 +72,11 @@ public class Order {
     }
 
     public String startAndEndTimeToString() {
+        return (this.getId() + ";" + this.startTime + ";"
+                + this.endTime + ";" + this.boxNumber + ";");
+    }
+
+    public String timeAndNameToString() {
         return (this.getId() + ";" + this.startTime + ";"
                 + this.endTime + ";" + this.boxNumber + ";");
     }

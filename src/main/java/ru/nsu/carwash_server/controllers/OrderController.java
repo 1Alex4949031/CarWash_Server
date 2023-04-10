@@ -12,9 +12,9 @@ import ru.nsu.carwash_server.models.Auto;
 import ru.nsu.carwash_server.models.Order;
 import ru.nsu.carwash_server.models.User;
 import ru.nsu.carwash_server.payload.request.BookingOrderRequest;
-import ru.nsu.carwash_server.payload.request.ChangeOrderRequest;
 import ru.nsu.carwash_server.payload.request.GetBookedOrdersInOneDayRequest;
 import ru.nsu.carwash_server.payload.request.NewOrderRequest;
+import ru.nsu.carwash_server.payload.request.UpdateOrderInfoRequest;
 import ru.nsu.carwash_server.payload.response.GetBookedOrdersInOneDayResponse;
 import ru.nsu.carwash_server.payload.response.MessageResponse;
 import ru.nsu.carwash_server.payload.response.OrderInfoResponse;
@@ -59,17 +59,17 @@ public class OrderController {
     }
 
     @PostMapping("/updateOrderInfo")
-    public ResponseEntity<?> updateOrderInfo(@Valid @RequestBody ChangeOrderRequest changeOrderRequest) {
+    public ResponseEntity<?> updateOrderInfo(@Valid @RequestBody UpdateOrderInfoRequest UpdateOrderInfoRequest) {
         UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         Long userId = userDetails.getId();
         ordersRepository.updateOrderInfo(true, userId,
-                changeOrderRequest.getPrice(), changeOrderRequest.getAutoId(),
-                changeOrderRequest.getSpecialist(), changeOrderRequest.getAdministrator(),
-                changeOrderRequest.getBoxNumber(), changeOrderRequest.getOrderId(),
-                changeOrderRequest.getBonuses(), changeOrderRequest.getComments(),
-                changeOrderRequest.isExecuted(), changeOrderRequest.getStartTime(),
-                changeOrderRequest.getEndTime());
-        return ResponseEntity.ok(changeOrderRequest);
+                UpdateOrderInfoRequest.getPrice(), UpdateOrderInfoRequest.getAutoId(),
+                UpdateOrderInfoRequest.getSpecialist(), UpdateOrderInfoRequest.getAdministrator(),
+                UpdateOrderInfoRequest.getBoxNumber(), UpdateOrderInfoRequest.getOrderId(),
+                UpdateOrderInfoRequest.getBonuses(), UpdateOrderInfoRequest.getComments(),
+                UpdateOrderInfoRequest.isExecuted(), UpdateOrderInfoRequest.getStartTime(),
+                UpdateOrderInfoRequest.getEndTime());
+        return ResponseEntity.ok(UpdateOrderInfoRequest);
     }
 
     @PostMapping("/getBookedTimeInOneDay")
