@@ -51,9 +51,11 @@ public class User {
     @ToString.Exclude
     @Column(nullable = false, unique = true)
     private String password;
+
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     @ToString.Exclude
     private Set<Auto> auto;
+
     private String fullName;
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(name = "user_roles",

@@ -6,19 +6,23 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
+import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.transaction.annotation.Transactional;
 import ru.nsu.carwash_server.TestHelper;
+import ru.nsu.carwash_server.models.Auto;
 import ru.nsu.carwash_server.models.Role;
 import ru.nsu.carwash_server.models.User;
 import ru.nsu.carwash_server.models.constants.ERole;
 import ru.nsu.carwash_server.payload.request.BookingOrderRequest;
 import ru.nsu.carwash_server.payload.request.LoginRequest;
 import ru.nsu.carwash_server.payload.request.NewCarRequest;
+import ru.nsu.carwash_server.payload.request.UpdateUserInfoRequest;
 import ru.nsu.carwash_server.repository.CarRepository;
 import ru.nsu.carwash_server.repository.OrdersRepository;
 import ru.nsu.carwash_server.repository.RoleRepository;
@@ -36,6 +40,7 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertEquals;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -62,9 +67,9 @@ public class UserTest {
     @Autowired
     private MockMvc mockMvc;
 
-    @Autowired
+    @MockBean
     private UserRepository userRepository;
-    @Autowired
+    @MockBean
     private RoleRepository roleRepository;
 
     @Autowired
@@ -96,7 +101,7 @@ public class UserTest {
 
     @Test
     public void bookNewOrder() throws Exception {
-        getUser();
+        User user = getUser();
 
         LoginRequest loginRequest = new LoginRequest(TEST_USERNAME, TEST_PASSWORD);
 
@@ -160,20 +165,30 @@ public class UserTest {
                 .andExpect(jsonPath("$.administrator",is("Misha")))
                 .andExpect(jsonPath("$.startTime").isNotEmpty());
 
-        User user = userRepository.findById(Long.valueOf(userId))
+        User userNewUsername = userRepository.findById(Long.valueOf(userId))
                 .orElseThrow(() -> new RuntimeException("Error: Пользователя с таким телефоном не существует"));
 
-        // ПОЧЕМУ autoSet РАВЕН НУЛЮ
-        /*Set<Auto> autoSet = user.getAuto();
-        int counter = 0;
+        System.out.println("Same user");
+        System.out.println(userNewUsername);
 
-        for (var auto: autoSet) {
-            if (auto.getId().equals(newCarId)) { // проверяем наличие объекта с нужным id;
-                counter++;
-                break;
-            }
-        }
-        assertEquals(1, counter);*/
+        UpdateUserInfoRequest updateUserInfoRequest = UpdateUserInfoRequest.builder()
+                .fullName("Misha b")
+                .username("4325678")
+                .build();
+
+        ResultActions resultActions = mockMvc.perform(put(API_AUTH_CHANGEUSERINFO)
+                        .header("Authorization", "Bearer " + token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(TestHelper.asJsonString(updateUserInfoRequest)))
+                .andExpect(status().isOk());
+
+        //userRepository.changeUserInfo(null, "333666",userNewUsername.getId(),null);
+        User userNewUsernameFromRepository = userRepository.findById(userNewUsername.getId())
+                .orElseThrow(() -> new RuntimeException("Error: Пользователя с таким телефоном не существует"));
+        System.out.println(userNewUsernameFromRepository);
+        // ПОЧЕМУ autoSet РАВЕН НУЛЮ
+        Set<Auto> autoSet = userNewUsernameFromRepository.getAuto();
+        assertEquals(1, autoSet.stream().filter(it -> it.getId().equals(newCarId)).count());
     }
 
     @Test

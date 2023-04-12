@@ -22,7 +22,6 @@ import ru.nsu.carwash_server.models.constants.ERole;
 import ru.nsu.carwash_server.payload.request.LoginRequest;
 import ru.nsu.carwash_server.payload.request.SignupRequest;
 import ru.nsu.carwash_server.payload.request.TokenRefreshRequest;
-import ru.nsu.carwash_server.repository.CarRepository;
 import ru.nsu.carwash_server.repository.RoleRepository;
 import ru.nsu.carwash_server.repository.UserRepository;
 import ru.nsu.carwash_server.security.jwt.JwtUtils;
@@ -53,15 +52,9 @@ public class RegistrationTest {
     private static final String API_AUTH_SIGNUP = "/api/auth/signup";
     private static final String API_AUTH_REFRESHTOKEN = "/api/auth/refreshtoken";
 
-    private static final String API_AUTH_CHANGEUSERINFO = "/api/user/updateUserInfo";
-
-    private static final String API_USER_SAVENEWCAR = "/api/user/saveNewCar";
     private static final String API_AUTH_SIGNOUT = "/api/auth/signout";
     private static final String TEST_USERNAME = "testuser";
     private static final String TEST_PASSWORD = "testpassword";
-    private static final String TEST_CAR_NUMBER = "A322GG";
-    private static final String TEST_CAR_CLASS = "1";
-
 
     @Autowired
     private MockMvc mockMvc;
@@ -71,9 +64,6 @@ public class RegistrationTest {
 
     @Autowired
     private RoleRepository roleRepository;
-
-    @Autowired
-    private CarRepository carRepository;
 
     @Autowired
     private PasswordEncoder encoder;

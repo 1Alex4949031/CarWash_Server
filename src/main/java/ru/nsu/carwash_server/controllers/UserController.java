@@ -21,6 +21,7 @@ import ru.nsu.carwash_server.payload.response.UserCarsResponse;
 import ru.nsu.carwash_server.payload.response.UserOrdersResponse;
 import ru.nsu.carwash_server.repository.CarRepository;
 import ru.nsu.carwash_server.repository.UserRepository;
+import ru.nsu.carwash_server.security.services.RefreshTokenService;
 import ru.nsu.carwash_server.security.services.UserDetailsImpl;
 
 import javax.validation.Valid;
@@ -33,7 +34,8 @@ import java.util.stream.Collectors;
 public class UserController {
     @Autowired
     UserRepository userRepository;
-
+    @Autowired
+    RefreshTokenService refreshTokenService;
     @Autowired
     CarRepository carRepository;
 
@@ -43,6 +45,7 @@ public class UserController {
         Long userId = userDetails.getId();
         userRepository.changeUserInfo(updateUserInfoRequest.getEmail(), updateUserInfoRequest.getUsername(),
                 userId, updateUserInfoRequest.getFullName());
+        refreshTokenService.deleteByUserId(userId);
         return ResponseEntity.ok(new MessageResponse("Пользователь " + userId
                 + " получил почту " + updateUserInfoRequest.getEmail()
                 + " и новый телефон " + updateUserInfoRequest.getUsername()));

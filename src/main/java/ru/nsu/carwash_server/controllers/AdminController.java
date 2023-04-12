@@ -17,6 +17,7 @@ import ru.nsu.carwash_server.payload.response.UserOrdersResponse;
 import ru.nsu.carwash_server.repository.OrdersRepository;
 import ru.nsu.carwash_server.repository.RoleRepository;
 import ru.nsu.carwash_server.repository.UserRepository;
+import ru.nsu.carwash_server.security.services.RefreshTokenService;
 
 import javax.validation.Valid;
 import java.util.Set;
@@ -31,6 +32,9 @@ public class AdminController {
 
     @Autowired
     RoleRepository roleRepository;
+
+    @Autowired
+    RefreshTokenService refreshTokenService;
 
     @Autowired
     OrdersRepository ordersRepository;
