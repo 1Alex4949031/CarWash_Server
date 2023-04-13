@@ -23,4 +23,4 @@ Mockito.when(roleRepository.findByName(ERole.ROLE_USER)).thenReturn(Optional.of(
 ```
 И это все только для регистрации пользователя. А я ведь для любых запросов дальше я должен регистрировать пользователя, затем логиниться им, добавлять машину и так далее.
 Получается ужасно много заглушек (моков), которые надо писать каждый раз.
-Вот пример (надеюсь что правильный) [моего теста] (https://github.com/Allody22/CarWash_Server/blob/master/src/test/java/ru/nsu/carwash_server/controllers/RegisterRequestsTest.java) с заглушками для запроса регистрации, мне не хватило сил опять делать заглушки для всего для любого другого запроса
+Вот пример (надеюсь что правильный) [моего теста](https://github.com/Allody22/CarWash_Server/blob/master/src/test/java/ru/nsu/carwash_server/controllers/RegisterRequestsTest.java) с заглушками для запроса регистрации, мне не хватило сил опять делать заглушки для всего для любого другого запроса
