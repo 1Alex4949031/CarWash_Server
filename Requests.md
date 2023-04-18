@@ -144,65 +144,67 @@
 На выход сначала список заказов пользователя, а потом информация о самом юзере  
 ```
 <details>
-<summary>Выходные данные</summary>
-{
-    "orders": [
-        {
-            "id": 1,
-            "price": 1.23,
-            "name": "moem car",
-            "startTime": "2023-03-01T03:22:11.000+00:00",
-            "endTime": "2023-03-01T07:53:11.000+00:00",
-            "administrator": "Lesha22",
-            "specialist": "Misha22",
-            "boxNumber": 2,
-            "bonuses": 0,
-            "booked": true,
-            "executed": false,
-            "comments": null,
-            "auto": {
+  <summary><strong>Выходные данные:</strong></summary>
+  <pre>
+    {
+        "orders": [
+            {
                 "id": 1,
-                "carNumber": "EN353T",
-                "carClass": "2 class"
+                "price": 1.23,
+                "name": "moem car",
+                "startTime": "2023-03-01T03:22:11.000+00:00",
+                "endTime": "2023-03-01T07:53:11.000+00:00",
+                "administrator": "Lesha22",
+                "specialist": "Misha22",
+                "boxNumber": 2,
+                "bonuses": 0,
+                "booked": true,
+                "executed": false,
+                "comments": null,
+                "auto": {
+                    "id": 1,
+                    "carNumber": "EN353T",
+                    "carClass": "2 class"
+                },
+                "user": {
+                    "id": 2,
+                    "username": "89635186660",
+                    "phone": "89635186660",
+                    "email": null,
+                    "bonuses": 100,
+                    "fullName": null
+                }
             },
-            "user": {
+            {
                 "id": 2,
-                "username": "89635186660",
-                "phone": "89635186660",
-                "email": null,
-                "bonuses": 100,
-                "fullName": null
+                "price": 1.23,
+                "name": "moem car",
+                "startTime": "2023-03-01T03:22:11.000+00:00",
+                "endTime": "2023-03-01T07:53:11.000+00:00",
+                "administrator": "Sasha",
+                "specialist": "Andrei",
+                "boxNumber": 2,
+                "bonuses": 0,
+                "booked": true,
+                "executed": false,
+                "comments": null,
+                "auto": {
+                    "id": 2,
+                    "carNumber": "УП333T",
+                    "carClass": "1 class"
+                },
+                "user": {
+                    "id": 2,
+                    "username": "89635186660",
+                    "phone": "89635186660",
+                    "email": null,
+                    "bonuses": 100,
+                    "fullName": null
+                }
             }
-        },
-        {
-            "id": 2,
-            "price": 1.23,
-            "name": "moem car",
-            "startTime": "2023-03-01T03:22:11.000+00:00",
-            "endTime": "2023-03-01T07:53:11.000+00:00",
-            "administrator": "Sasha",
-            "specialist": "Andrei",
-            "boxNumber": 2,
-            "bonuses": 0,
-            "booked": true,
-            "executed": false,
-            "comments": null,
-            "auto": {
-                "id": 2,
-                "carNumber": "УП333T",
-                "carClass": "1 class"
-            },
-            "user": {
-                "id": 2,
-                "username": "89635186660",
-                "phone": "89635186660",
-                "email": null,
-                "bonuses": 100,
-                "fullName": null
-            }
-        }
-    ]
-}
+        ]
+    }
+  </pre>
 </details>
 ```
 8) ```@PutMapping("api/user/updateUserInfo")``` - обновление/добавление какой-то информации о пользователи  
