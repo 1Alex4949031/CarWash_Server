@@ -23,7 +23,6 @@ import ru.nsu.carwash_server.security.services.UserDetailsImpl;
 
 import javax.validation.Valid;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 
 @CrossOrigin(origins = "*", maxAge = 3600)
@@ -74,11 +73,9 @@ public class OrderController {
 
     @PostMapping("/getBookedTimeInOneDay")
     public ResponseEntity<?> getBookedTimeInOneDay(@Valid @RequestBody GetBookedOrdersInOneDayRequest getBookedOrdersInOneDayRequest) {
-        Set<String> orderStrings = ordersRepository
+        Set<Order> order = ordersRepository
                 .getBookedOrdersInOneDay(getBookedOrdersInOneDayRequest.getStartTime(),
-                        getBookedOrdersInOneDayRequest.getEndTime()).stream()
-                .map(Order::startAndEndTimeToString) // применяем метод startAndEndTimeToString к каждому Order
-                .collect(Collectors.toSet());
-        return ResponseEntity.ok(new GetBookedOrdersInOneDayResponse(orderStrings));
+                        getBookedOrdersInOneDayRequest.getEndTime());
+        return ResponseEntity.ok(new GetBookedOrdersInOneDayResponse(order));
     }
 }
