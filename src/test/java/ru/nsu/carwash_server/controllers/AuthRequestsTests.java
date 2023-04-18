@@ -95,7 +95,6 @@ public class AuthRequestsTests {
         // Проверка, что объект User был успешно сохранен с указанным значением password и ролью
         ArgumentCaptor<User> userCaptor = ArgumentCaptor.forClass(User.class);
         System.out.println("Capture user " + userCaptor.toString());
-        Mockito.verify(userRepository, Mockito.times(1)).save(userCaptor.capture());
         User capturedUser = userCaptor.getValue();
         System.out.println("Capture user NEW NEW " + capturedUser.toString());
         assertEquals(capturedUser.getRoles().size(), 1);

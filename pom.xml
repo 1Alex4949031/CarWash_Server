@@ -9,10 +9,10 @@
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <groupId>ru.nsu</groupId>
-    <artifactId>CarWash_Server</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
-    <name>CarWash_Server</name>
-    <description>CarWash_Server</description>
+    <artifactId>CarWash</artifactId>
+    <version>1.0.0</version>
+    <name>CarWash</name>
+    <description>CarWash</description>
     <properties>
         <java.version>17</java.version>
     </properties>
@@ -62,14 +62,6 @@
             <version>9.16.0</version>
         </dependency>
 
-        <!-- https://mvnrepository.com/artifact/org.flywaydb.flyway-test-extensions/flyway-spring-test -->
-        <dependency>
-            <groupId>org.flywaydb.flyway-test-extensions</groupId>
-            <artifactId>flyway-spring-test</artifactId>
-            <version>9.5.0</version>
-            <scope>test</scope>
-        </dependency>
-
 
         <dependency>
             <groupId>org.springframework.security</groupId>
@@ -101,6 +93,18 @@
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>postgresql</artifactId>
+            <version>1.17.3</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <version>1.17.3</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
