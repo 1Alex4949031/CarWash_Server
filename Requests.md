@@ -5,14 +5,14 @@
 1) ```@PostMapping("/api/auth/signup")``` - регистрация клиента  
 На вход подается джейсон с информации о клиенте, а пример запроса:  
 Входные данные : 
-```
+```json
 {
     "username" : "89635186660",
     "password" : "testPassword"
 }
 ``` 
 Выходные данные:
-```
+```json
 {
     "message": "User registered successfully!"
 }
@@ -21,14 +21,14 @@
 
 2) ```@PostMapping("/api/auth/signin)``` - логин клиента  
 На вход подаётся username (phone) и password  
-```
+```json
 {
     "username": "89635186660",
     "password": "testPassword"
 }
 ```
 Выходные данные - это информация о созданном bearer токене, имя пользователя и его роль
-```
+```json
 {
     "token": "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiI4OTYzNTE4NjY2MCIsImlhdCI6MTY4MTgxNDk5NiwiZXhwIjoxNjgxODIwOTk2fQ.-tYEHbjGR_vWcfKcB-klbJ0EM4bdUTlyGJLeOIJ5ikqarCs15dpnkpKniAgU20GM8wc83Jfq6aE_OvykLjnxSQ",
     "type": "Bearer",
@@ -43,13 +43,13 @@
 
 3) ```@PostMapping("/api/auth/refreshtoken)``` - обновление токена  
 На вход подаётся сам refresh token, время действия которого уже вышло    
-```
+```json
 {
     "refreshToken": "6f442bfe-be67-4af8-8d88-4ce20017f7c9"
 }
 ```
    Выходные данные - мы получаем новый accessToken и всё тот же refreshToken: 
-```
+```json
 {
     "accessToken": "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiI4OTYzNTE4NjY2MCIsImlhdCI6MTY4MTgxNTg1NCwiZXhwIjoxNjgxODIxODU0fQ.vUj_6JTHyLmpx3VqwMwd5HU8QYlLO0_mnqArlZRAaNGig2PAURYLLkRtmHAbHSrCsbTLE--yHKQ0-h0-OhyJIA",
     "refreshToken": "6f442bfe-be67-4af8-8d88-4ce20017f7c9",
@@ -61,14 +61,14 @@
 Все запросы будут от лица пользователя, которому принадлежит этот токен  
 4) ```@PostMapping("api/user/saveNewCar")``` - пользователь добавляет новую машину  
 На вход подаётся номер машины, тип кузова  
-```
+```json
 {
     "carNumber": "EN353T",
     "carClass" : "2 class"
 }
  ```
 На выход информация о машине, айды машины и пользователя, который её добавил  
-```
+```json
 {
     "carNumber": "EN353T",
     "carId": 1,
@@ -79,7 +79,7 @@
 
 5)```@PostMapping("api/orders/bookOrder")``` - бронирование заказа  
 На вход подаётся вся информация о заказе и машина, для которой заказ    
-```
+```json
 {
     "administrator" : "Lesha22",
     "price":1.23,
@@ -93,7 +93,7 @@
 }
 ```
 На выход подаются все поля заказа, какими они сохранились, так как не вся информация обязательная в запросе:
-```
+```json
 {
     "id": 1,
     "price": 1.23,
@@ -112,9 +112,11 @@
 ```
 
 6) ```@GetMapping("api/user/getUserCars")``` - просмотр своих машин  
-На вход нужен только токен  
-На выход сначала список машин пользователя, а потом информация о самом юзере  
-```
+На вход нужен только токен    
+<details>
+  <summary><strong>Выходные данные:</strong>На выход сначала список машин пользователя, а потом информация о самом юзере</summary>
+  <p>
+```json
 {
     "autoList": [
         {
@@ -138,13 +140,14 @@
     }
 }
 ```
+      
+  </p>
+</details>
 
 7) ```@GetMapping("api/user/getUserOrders")``` - просмотр своих заказов  
-На вход нужен только токен  
-На выход сначала список заказов пользователя, а потом информация о самом юзере  
-
+На вход нужен только токен    
 <details>
-  <summary><strong>API запрос:</strong> Получение списка заказов пользователя</summary>
+  <summary><strong>Выходные данные:</strong> На выход сначала список заказов пользователя, а потом информация о самом юзере</summary>
   <p>
 
 ```json
@@ -213,14 +216,14 @@
 
 8) ```@PutMapping("api/user/updateUserInfo")``` - обновление/добавление какой-то информации о пользователи  
 На вход вместе с токеном та информация, которую надо добавить/обновить (почту, телефон и ФИО)  
-```
+```json
 {
     "email" : "misha.23123123b32131ogdanov@gmail.com",
     "fullName": "Богданов Михаил Сергеевич213123123123edasd"
 }
 ```
 На выход сообщение о новой информации  
-```
+```json
 {
     "message": "Пользователь 2 получил почту misha.23123123b32131ogdanov@gmail.com и новый телефон null"
 }
@@ -230,21 +233,21 @@
 4) ```@PostMapping("api/orders/newOrder")``` - добавление нового заказа\
 На вход подаётся название услуги, дата, цена\
    http://localhost:8080/api/orders/newOrder 
-   ```
-   {
+```json
+{
     "name": "моем машину",
     "date" : "2023-03-01T15:40:11.999",
     "price": 1.234
-   }
-   ```
+}
+```
 На выход пока просто информация, что заказ добавлен  
 5) ```@PostMapping("api/orders//bookOrder")``` - бронирование существующего заказа\
 На вход подаётся название услуги, дата, цена\
    http://localhost:8080/api/orders/bookOrder 
-   ```
+```json
    {
     "name": "моем машину",
     "date" : "2023-03-01T15:40:11.999",
     "price": 1.234
    }
-   ```
+```
