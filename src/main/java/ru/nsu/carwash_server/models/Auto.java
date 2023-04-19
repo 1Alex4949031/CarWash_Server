@@ -31,8 +31,11 @@ public class Auto {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
     private String carNumber;
+
     private String carClass; //1 -Седан,хэтчбек;2 -Кроссовер; 3 - Кроссовер,джип
+
     @ManyToOne(cascade = CascadeType.MERGE)
     @ToString.Exclude
     @JsonIgnore

@@ -1,5 +1,6 @@
-package ru.nsu.carwash_server.controllers;
+package ru.nsu.carwash_server.testContainers;
 
+import org.junit.Before;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -46,15 +47,19 @@ public class RegistrationControllerTest {
     @LocalServerPort
     private int port;
 
+    @Before
+    public void setUp() {
+        userRepository.deleteAll();
+    }
     @Test
     @DirtiesContext
     public void testRegisterUser() {
         String baseUrl = "http://localhost:" + port + "/api/auth/signup";
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
-        User user = new User("testuser", "password");
-        HttpEntity<User> request = new HttpEntity<>(user, headers);
-        ResponseEntity<String> response = restTemplate.postForEntity(baseUrl, request, String.class);
+        User user = new User("testUser", "password");
+        HttpEntity<User> registerFirstRequest = new HttpEntity<>(user, headers);
+        ResponseEntity<String> response = restTemplate.postForEntity(baseUrl, registerFirstRequest, String.class);
         //Проверяем то что запрос норм и юзер реально зарегистрировался, существует в бд
         assertEquals(HttpStatus.OK, response.getStatusCode());
         Optional<User> savedUser = userRepository.findByUsername(user.getUsername());
@@ -64,21 +69,28 @@ public class RegistrationControllerTest {
         Optional<User> notSavedUser = userRepository.findByUsername("fakeUser");
         assertFalse(notSavedUser.isPresent());
         //пытаемся второй раз зарегистрироваться с существующим никнеймом
-        
+        User userWithSameName = new User("testUser", "samePassword");
+        HttpEntity<User> registerSecondRequest = new HttpEntity<>(userWithSameName, headers);
+        ResponseEntity<String> registerSecondResponse = restTemplate.postForEntity(baseUrl, registerSecondRequest, String.class);
+        //Проверяем то что не может второй раз зарегаться такой же юзер
+        assertEquals(HttpStatus.BAD_REQUEST, registerSecondResponse.getStatusCode());
     }
 
-    @Test
+
+    /*@Test
     @DirtiesContext
-    public void registerUser() {
+    public void testRegisterUserTwo() {
         String baseUrl = "http://localhost:" + port + "/api/auth/signup";
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         User user = new User("testuser", "password");
         HttpEntity<User> request = new HttpEntity<>(user, headers);
         ResponseEntity<String> response = restTemplate.postForEntity(baseUrl, request, String.class);
+        System.out.println(response.getStatusCodeValue());
+        System.out.println(response.getBody());
         assertEquals(HttpStatus.OK, response.getStatusCode());
         Optional<User> savedUser = userRepository.findByUsername(user.getUsername());
         assertTrue(savedUser.isPresent());
         assertEquals(user.getUsername(), savedUser.get().getUsername());
-    }
+    }*/
 }

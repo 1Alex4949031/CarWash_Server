@@ -1,4 +1,4 @@
-package ru.nsu.carwash_server.controllers;
+package ru.nsu.carwash_server.mock;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Test;
@@ -15,6 +15,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
@@ -43,6 +44,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @AutoConfigureMockMvc
 @Transactional
+@Sql(scripts = "/sql/insert_roles.sql")
 public class AuthRequestsTests {
     private static final String API_AUTH_SIGNIN = "/api/auth/signin";
     private static final String API_AUTH_SIGNUP = "/api/auth/signup";
