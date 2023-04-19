@@ -1,4 +1,4 @@
-package ru.nsu.carwash_server.controllers;
+package ru.nsu.carwash_server.mock;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Test;

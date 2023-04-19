@@ -6,11 +6,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import ru.nsu.carwash_server.models.User;
-import ru.nsu.carwash_server.payload.request.FindingUserInfo;
 import ru.nsu.carwash_server.payload.response.UserCarsResponse;
 import ru.nsu.carwash_server.payload.response.UserInformationResponse;
 import ru.nsu.carwash_server.payload.response.UserOrdersResponse;
@@ -47,8 +46,8 @@ public class AdminController {
 
     @GetMapping("/findUserByTelephone")
     @PreAuthorize("hasRole('MODERATOR') or hasRole('ADMIN')")
-    public ResponseEntity<?> findByTelephone(@Valid @RequestBody FindingUserInfo userInfoRequest) {
-        User user = userRepository.findByUsername(userInfoRequest.getUsername())
+    public ResponseEntity<?> findByTelephone(@Valid @RequestParam("username") String username) {
+        User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("Error: Пользователя с таким телефоном не существует"));
         return ResponseEntity.ok(new UserInformationResponse(user.getOrders(), user.getId(),
                 user.getAuto(), user.getFullName(), user.getPhone(), user.getEmail(),
@@ -57,8 +56,8 @@ public class AdminController {
 
     @GetMapping("/getUserOrdersByAdmin")
     @PreAuthorize("hasRole('MODERATOR') or hasRole('ADMIN')")
-    public ResponseEntity<?> getUserOrdersByAdmin(@Valid @RequestBody FindingUserInfo userInfoRequest) {
-        User user = userRepository.findByUsername(userInfoRequest.getUsername())
+    public ResponseEntity<?> getUserOrdersByAdmin(@Valid @RequestParam("username") String username) {
+        User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("Error: Пользователя с таким телефоном не существует"));
         Set<String> autoSetString = user.getOrders().stream()
                 .map(Object::toString)
@@ -68,8 +67,8 @@ public class AdminController {
 
     @GetMapping("/getUserCarsByAdmin")
     @PreAuthorize("hasRole('MODERATOR') or hasRole('ADMIN')")
-    public ResponseEntity<?> getUserCarsByAdmin(@Valid @RequestBody FindingUserInfo userInfoRequest) {
-        User user = userRepository.findByUsername(userInfoRequest.getUsername())
+    public ResponseEntity<?> getUserCarsByAdmin(@Valid @RequestParam("username") String username) {
+        User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("Error: Пользователя с таким телефоном не существует"));
         Set<String> autoSetString = user.getAuto().stream()
                 .map(Object::toString)
