@@ -2,11 +2,12 @@ package ru.nsu.carwash_server.payload.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import ru.nsu.carwash_server.models.Order;
 
 import java.util.Set;
 
 @Data
 @AllArgsConstructor
 public class GetBookedOrdersInOneDayResponse {
-    private Set<String> orders;
+    private Set<Order> orders;
 }

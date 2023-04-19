@@ -11,7 +11,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import ru.nsu.carwash_server.models.Auto;
-import ru.nsu.carwash_server.models.Order;
 import ru.nsu.carwash_server.models.User;
 import ru.nsu.carwash_server.payload.request.NewCarRequest;
 import ru.nsu.carwash_server.payload.request.UpdateUserInfoRequest;
@@ -25,8 +24,6 @@ import ru.nsu.carwash_server.security.services.RefreshTokenService;
 import ru.nsu.carwash_server.security.services.UserDetailsImpl;
 
 import javax.validation.Valid;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 @CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
@@ -68,10 +65,7 @@ public class UserController {
         Long userId = userDetails.getId();
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("Error: Пользователя с таким телефоном не существует"));
-        Set<String> setString = user.getOrders().stream()
-                .map(Order::timeAndNameToString)
-                .collect(Collectors.toSet());
-        return ResponseEntity.ok(new UserOrdersResponse(setString, userId, user.getUsername()));
+        return ResponseEntity.ok(new UserOrdersResponse(user.getOrders()));
     }
 
     @GetMapping("/getUserCars")
@@ -80,10 +74,6 @@ public class UserController {
         Long userId = userDetails.getId();
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("Error: Пользователя с таким телефоном не существует"));
-        Set<String> autoSetString = user.getAuto().stream()
-                .map(Object::toString)
-                .collect(Collectors.toSet());
-        return ResponseEntity.ok(new UserCarsResponse(autoSetString, user.getId(),
-                user.getUsername()));
+        return ResponseEntity.ok(new UserCarsResponse(user.getAuto(), user));
     }
 }

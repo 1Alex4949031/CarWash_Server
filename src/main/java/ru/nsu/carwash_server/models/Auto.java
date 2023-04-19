@@ -1,6 +1,7 @@
 package ru.nsu.carwash_server.models;
 
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -30,10 +31,14 @@ public class Auto {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
     private String carNumber;
+
     private String carClass; //1 -Седан,хэтчбек;2 -Кроссовер; 3 - Кроссовер,джип
+
     @ManyToOne(cascade = CascadeType.MERGE)
     @ToString.Exclude
+    @JsonIgnore
     private User user;
 
     public Auto(Long id) {

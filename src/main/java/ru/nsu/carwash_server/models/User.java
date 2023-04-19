@@ -1,6 +1,7 @@
 package ru.nsu.carwash_server.models;
 
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -38,30 +39,39 @@ public class User {
     @NotBlank
     @Column(nullable = false, unique = true)
     private String username;
+
     @NotBlank
     private String phone;
-    @OneToMany(mappedBy = "user",  cascade = CascadeType.ALL, orphanRemoval = true)
-    @ToString.Exclude
-    private Set<Order> orders;
+
     @Email
     @Column(unique = true)
     private String email;
+
     private int bonuses;
     @NotBlank
     @ToString.Exclude
     @Column(nullable = false, unique = true)
+    @JsonIgnore
     private String password;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     @ToString.Exclude
+    @JsonIgnore
     private Set<Auto> auto;
 
+    @OneToMany(mappedBy = "user",  cascade = CascadeType.ALL, orphanRemoval = true)
+    @ToString.Exclude
+    @JsonIgnore
+    private Set<Order> orders;
+
     private String fullName;
+
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(name = "user_roles",
             joinColumns = @JoinColumn(name = "user_id"),
             inverseJoinColumns = @JoinColumn(name = "role_id"))
     @ToString.Exclude
+    @JsonIgnore
     private Set<Role> roles = new HashSet<>();
     public User(Long id) {
         this.id = id;
