@@ -8,9 +8,11 @@ import java.util.Date;
 
 @Data
 @AllArgsConstructor
-public class GetBookedOrdersInOneDayRequest {
+public class GetBookedOrdersInTimeIntervalRequest {
+
     @NotNull
     private Date startTime;
+
     @NotNull
     private Date endTime;
 }

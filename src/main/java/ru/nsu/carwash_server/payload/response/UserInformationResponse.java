@@ -11,12 +11,20 @@ import java.util.Set;
 @Data
 @AllArgsConstructor
 public class UserInformationResponse {
+
     private Set<Order> orders;
+
     private Long id;
+
     private Set<Auto> cars;
+
     private String fullName;
+
     private String phone;
+
     private String email;
+
     private int bonuses;
+
     private Set<Role> roles;
 }

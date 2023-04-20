@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 
 
+import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.util.Date;
 
@@ -12,17 +13,28 @@ import java.util.Date;
 @AllArgsConstructor
 @Builder
 public class BookingOrderRequest {
+
     private Double price;
-    @NotNull
+
+    @NotBlank
     private String name;
+
     @NotNull
     private Date startTime;
+
     private String administrator;
+
     private String specialist;
+
     private Long autoId;
+
     private int boxNumber;
+
     private int bonuses;
+
     private String comments;
+
     private boolean executed;
+
     private Date endTime;
 }

@@ -12,10 +12,10 @@ import ru.nsu.carwash_server.models.Auto;
 import ru.nsu.carwash_server.models.Order;
 import ru.nsu.carwash_server.models.User;
 import ru.nsu.carwash_server.payload.request.BookingOrderRequest;
-import ru.nsu.carwash_server.payload.request.GetBookedOrdersInOneDayRequest;
+import ru.nsu.carwash_server.payload.request.GetBookedOrdersInTimeIntervalRequest;
 import ru.nsu.carwash_server.payload.request.NewOrderRequest;
 import ru.nsu.carwash_server.payload.request.UpdateOrderInfoRequest;
-import ru.nsu.carwash_server.payload.response.GetBookedOrdersInOneDayResponse;
+import ru.nsu.carwash_server.payload.response.GetBookedOrdersInTimeIntervalResponse;
 import ru.nsu.carwash_server.payload.response.MessageResponse;
 import ru.nsu.carwash_server.payload.response.OrderInfoResponse;
 import ru.nsu.carwash_server.repository.OrdersRepository;
@@ -72,10 +72,10 @@ public class OrderController {
     }
 
     @PostMapping("/getBookedTimeInOneDay")
-    public ResponseEntity<?> getBookedTimeInOneDay(@Valid @RequestBody GetBookedOrdersInOneDayRequest getBookedOrdersInOneDayRequest) {
+    public ResponseEntity<?> getBookedTimeInOneDay(@Valid @RequestBody GetBookedOrdersInTimeIntervalRequest orders) {
         Set<Order> order = ordersRepository
-                .getBookedOrdersInOneDay(getBookedOrdersInOneDayRequest.getStartTime(),
-                        getBookedOrdersInOneDayRequest.getEndTime());
-        return ResponseEntity.ok(new GetBookedOrdersInOneDayResponse(order));
+                .getBookedOrdersInOneDay(orders.getStartTime(),
+                        orders.getEndTime());
+        return ResponseEntity.ok(new GetBookedOrdersInTimeIntervalResponse(order));
     }
 }

@@ -12,9 +12,13 @@ import java.util.Set;
 @Builder
 @AllArgsConstructor
 public class UpdateUserInfoRequest {
+
     @Email
     private String email;
+
     private String username;
+
     private String fullName;
+
     private Set<Role> role;
 }
