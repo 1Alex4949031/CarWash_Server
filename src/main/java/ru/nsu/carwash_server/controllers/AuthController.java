@@ -76,8 +76,16 @@ public class AuthController {
 
         RefreshToken refreshToken = refreshTokenService.createRefreshToken(userDetails.getId());
 
-        return ResponseEntity.ok(new JwtResponse(jwt, refreshToken.getToken(), userDetails.getId(),
-                userDetails.getUsername(), roles));
+        JwtResponse jwtResponse = JwtResponse
+                .builder()
+                .token(jwt)
+                .type("Bearer")
+                .refreshToken(refreshToken.getToken())
+                .id(userDetails.getId())
+                .username(userDetails.getUsername())
+                .roles(roles)
+                .build();
+        return ResponseEntity.ok(jwtResponse);
     }
 
     @PostMapping("/signup")

@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 
+import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.util.Date;
 
@@ -12,11 +13,14 @@ import java.util.Date;
 @AllArgsConstructor
 @Builder
 public class NewOrderRequest {
+
     private Double price;
-    @NotNull
+
+    @NotBlank
     private String name;
+
     @NotNull
     private Date date;
-    private boolean booked;
 
+    private boolean booked;
 }

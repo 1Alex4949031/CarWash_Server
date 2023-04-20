@@ -22,7 +22,6 @@ public interface UserRepository extends JpaRepository<User, Long> {
     void changeUserInfo(@Param("Email") String email, @Param("Phone") String username,
                        @Param("UserId") Long userId, @Param("FullName") String fullName);
 
-
     Optional<User> findByUsername(String username);
 
     Boolean existsByUsername(String username);

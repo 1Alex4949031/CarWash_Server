@@ -10,6 +10,8 @@ import java.util.Set;
 @Data
 @AllArgsConstructor
 public class UserCarsResponse {
+
     private Set<Auto> autoList;
+
     private User user;
 }

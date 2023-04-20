@@ -8,6 +8,7 @@ import java.util.Set;
 
 @Data
 @AllArgsConstructor
-public class GetBookedOrdersInOneDayResponse {
+public class GetBookedOrdersInTimeIntervalResponse {
+
     private Set<Order> orders;
 }

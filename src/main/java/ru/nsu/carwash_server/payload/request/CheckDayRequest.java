@@ -11,7 +11,9 @@ import java.util.Date;
 @Builder
 @AllArgsConstructor
 public class CheckDayRequest {
+
     @NotNull
     private Date date;
+
     private int boxNumber;
 }
