@@ -23,6 +23,7 @@ import javax.persistence.Table;
 @Getter @Setter
 @AllArgsConstructor
 public class Role {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
@@ -33,5 +34,4 @@ public class Role {
     public Role(ERole name) {
         this.name = name;
     }
-
 }

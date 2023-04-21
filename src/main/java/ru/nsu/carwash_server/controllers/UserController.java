@@ -65,7 +65,7 @@ public class UserController {
         Long userId = userDetails.getId();
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("Error: Пользователя с таким телефоном не существует"));
-        return ResponseEntity.ok(new UserOrdersResponse(user.getOrders()));
+        return ResponseEntity.ok(new UserOrdersResponse(user.getOrders(), user));
     }
 
     @GetMapping("/getUserCars")

@@ -62,7 +62,7 @@ public class AdminController {
         Set<String> autoSetString = user.getOrders().stream()
                 .map(Object::toString)
                 .collect(Collectors.toSet());
-        return ResponseEntity.ok(new UserOrdersResponse(autoSetString, user.getId(), user.getUsername()));
+        return ResponseEntity.ok(new UserOrdersResponse(user.getOrders(), user));
     }
 
     @GetMapping("/getUserCarsByAdmin")
@@ -73,7 +73,7 @@ public class AdminController {
         Set<String> autoSetString = user.getAuto().stream()
                 .map(Object::toString)
                 .collect(Collectors.toSet());
-        return ResponseEntity.ok(new UserCarsResponse(autoSetString, user.getId(),
-                user.getUsername()));
+        return ResponseEntity.ok(new UserCarsResponse(user.getAuto(),
+                user));
     }
 }
