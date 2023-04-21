@@ -59,10 +59,7 @@ public class AdminController {
     public ResponseEntity<?> getUserOrdersByAdmin(@Valid @RequestParam("username") String username) {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("Error: Пользователя с таким телефоном не существует"));
-        Set<String> autoSetString = user.getOrders().stream()
-                .map(Object::toString)
-                .collect(Collectors.toSet());
-        return ResponseEntity.ok(new UserOrdersResponse(autoSetString, user.getId(), user.getUsername()));
+        return ResponseEntity.ok(new UserOrdersResponse(user.getOrders(), user));
     }
 
     @GetMapping("/getUserCarsByAdmin")
@@ -70,10 +67,7 @@ public class AdminController {
     public ResponseEntity<?> getUserCarsByAdmin(@Valid @RequestParam("username") String username) {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("Error: Пользователя с таким телефоном не существует"));
-        Set<String> autoSetString = user.getAuto().stream()
-                .map(Object::toString)
-                .collect(Collectors.toSet());
-        return ResponseEntity.ok(new UserCarsResponse(autoSetString, user.getId(),
-                user.getUsername()));
+        return ResponseEntity.ok(new UserCarsResponse(user.getAuto(),
+                user));
     }
 }
