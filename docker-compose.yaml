@@ -1,0 +1,24 @@
+version: "3"
+services:
+  db:
+    container_name: db
+    image: postgres:11-alpine
+    environment:
+      POSTGRES_USER: postgres    #TODO change user and password before production
+      POSTGRES_PASSWORD: 0000
+    ports:
+     - 5432:5432
+    volumes:
+      - ./log-directory:/var/lib/postgresql/data
+  carwash:
+    container_name: carWash
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    expose:
+      - "8080"
+    restart: always
+    depends_on:
+      - db
