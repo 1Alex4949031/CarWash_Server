@@ -1,11 +1,11 @@
-CREATE TABLE ordersAdditional
+CREATE TABLE orders_extra
 (
     id   INTEGER PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
     name VARCHAR(256) NOT NULL
 );
 
 
-INSERT INTO ordersAdditional (name)
+INSERT INTO orders_extra (name)
 VALUES
     ('TURBO_DRYING'),
     ('BODY_BLOW'),

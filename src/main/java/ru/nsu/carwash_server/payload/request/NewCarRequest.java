@@ -16,5 +16,5 @@ public class NewCarRequest {
     private String carNumber;
 
     @NotBlank
-    private String carClass;
+    private Integer carClass;
 }

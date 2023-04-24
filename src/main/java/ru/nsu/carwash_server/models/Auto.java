@@ -34,7 +34,7 @@ public class Auto {
 
     private String carNumber;
 
-    private String carClass; //1 -Седан,хэтчбек;2 -Кроссовер; 3 - Кроссовер,джип
+    private int carClass; //1 -Седан,хэтчбек;2 -Кроссовер; 3 - Кроссовер,джип
 
     @ManyToOne(cascade = CascadeType.MERGE)
     @ToString.Exclude
@@ -45,7 +45,7 @@ public class Auto {
         this.id = id;
     }
 
-    public Auto(String carNumber, String carClass, User user) {
+    public Auto(String carNumber, int carClass, User user) {
         setCarClass(carClass);
         setCarNumber(carNumber);
         setUser(user);

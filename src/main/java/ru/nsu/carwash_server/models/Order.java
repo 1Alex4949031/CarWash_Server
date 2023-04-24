@@ -32,15 +32,13 @@ import java.util.List;
 @Getter @Setter
 @AllArgsConstructor
 public class Order {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private Double price;
 
     @Enumerated(EnumType.STRING)
     private EOrderMain eOrderMain;
-
-    private String name;
 
     private Date startTime;
 
@@ -65,8 +63,8 @@ public class Order {
     private Auto auto;
 
     @ManyToMany(fetch = FetchType.LAZY)
-    @JoinTable(name = "orders_optionalOrders",
-            joinColumns = @JoinColumn(name = "ordersAdditional_id"),
+    @JoinTable(name = "orders_extra_link",
+            joinColumns = @JoinColumn(name = "extras_id"),
             inverseJoinColumns = @JoinColumn(name = "order_id"))
     private List<OrdersAdditional> ordersAdditional = new ArrayList<>();
 
@@ -76,11 +74,11 @@ public class Order {
     @JsonIgnore
     private User user;
 
-    public Order(String name, double price, Date startTime, Date endTime, String administrator, String specialist,
+    public Order(EOrderMain mainOrder, List<OrdersAdditional> extraOrders,Date startTime, Date endTime, String administrator, String specialist,
                  int boxNumber, int bonuses, boolean booked, boolean executed, String comments,
                  Auto auto, User user) {
-        this.name = name;
-        this.price = price;
+        this.eOrderMain = mainOrder;
+        this.ordersAdditional = extraOrders;
         this.startTime = startTime;
         this.endTime = endTime;
         this.administrator = administrator;
@@ -92,11 +90,5 @@ public class Order {
         this.comments = comments;
         this.auto = auto;
         this.user = user;
-    }
-
-    public Order(String name, double price, Date startTime) {
-        this.name = name;
-        this.price = price;
-        this.startTime = startTime;
     }
 }

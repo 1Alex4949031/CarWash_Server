@@ -14,11 +14,11 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import ru.nsu.carwash_server.models.exception.TokenRefreshException;
-import ru.nsu.carwash_server.models.constants.ERole;
 import ru.nsu.carwash_server.models.RefreshToken;
 import ru.nsu.carwash_server.models.Role;
 import ru.nsu.carwash_server.models.User;
+import ru.nsu.carwash_server.models.constants.ERole;
+import ru.nsu.carwash_server.models.exception.TokenRefreshException;
 import ru.nsu.carwash_server.payload.request.LoginRequest;
 import ru.nsu.carwash_server.payload.request.SignupRequest;
 import ru.nsu.carwash_server.payload.request.TokenRefreshRequest;
@@ -32,8 +32,10 @@ import ru.nsu.carwash_server.security.services.RefreshTokenService;
 import ru.nsu.carwash_server.security.services.UserDetailsImpl;
 
 import javax.validation.Valid;
+import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -61,6 +63,9 @@ public class AuthController {
 
     @PostMapping("/signin")
     public ResponseEntity<?> authenticateUser(@Valid @RequestBody LoginRequest loginRequest) {
+        if (!userRepository.existsByUsername(loginRequest.getUsername())) {
+            return ResponseEntity.badRequest().body(new MessageResponse("Error: такого пользователя не существует!"));
+        }
 
         Authentication authentication = authenticationManager
                 .authenticate(new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword()));
@@ -93,31 +98,32 @@ public class AuthController {
         if (userRepository.existsByUsername(signUpRequest.getUsername())) {
             return ResponseEntity.badRequest().body(new MessageResponse("Error: телефон уже занят!"));
         }
+        Set<Role> roles = new HashSet<>();
         User user = new User(signUpRequest.getUsername(),
                 encoder.encode(signUpRequest.getPassword()));
         Set<String> strRoles = signUpRequest.getRole();
-        Set<Role> roles = new HashSet<>();
-        if (strRoles == null) {
+        if (strRoles == null || strRoles.isEmpty()) {
             Role userRole = roleRepository.findByName(ERole.ROLE_USER)
                     .orElseThrow(() -> new RuntimeException("Error: Role is not found."));
             roles.add(userRole);
         } else {
-            strRoles.forEach(role -> {
-                switch (role) {
-                    case "admin":
-                        Role adminRole = roleRepository.findByName(ERole.ROLE_ADMIN)
-                                .orElseThrow(() -> new RuntimeException("Error: Role is not found."));
-                        roles.add(adminRole);
-                    case "mod":
-                        Role modRole = roleRepository.findByName(ERole.ROLE_MODERATOR)
-                                .orElseThrow(() -> new RuntimeException("Error: Role is not found."));
-                        roles.add(modRole);
-                    default:
-                        Role userRole = roleRepository.findByName(ERole.ROLE_USER)
-                                .orElseThrow(() -> new RuntimeException("Error: Role is not found."));
-                        roles.add(userRole);
+            Set<ERole> rolesList = EnumSet.allOf(ERole.class);
+            roles = strRoles.stream().map(role -> {
+                Optional<ERole> enumRole = rolesList.stream()
+                        .filter(r -> r.name().equalsIgnoreCase(role))
+                        .findAny();
+                if (enumRole.isPresent()) {
+                    return roleRepository.findByName(enumRole.get())
+                            .orElseThrow(() -> new RuntimeException("Error: Role is not found."));
+                } else {
+                    throw new RuntimeException("Error: Invalid role.");
                 }
-            });
+            }).collect(Collectors.toSet());
+
+            // Добавление роли пользователя, если ее нет в списке ролей
+            Role userRole = roleRepository.findByName(ERole.ROLE_USER)
+                    .orElseThrow(() -> new RuntimeException("Error: Role is not found."));
+            roles.add(userRole);
         }
 
         user.setRoles(roles);
@@ -134,7 +140,7 @@ public class AuthController {
                 .map(RefreshToken::getUser)
                 .map(user -> {
                     String token = jwtUtils.generateTokenFromUsername(user.getUsername());
-                    return ResponseEntity.ok(new TokenRefreshResponse(token,request.getRefreshToken() ));
+                    return ResponseEntity.ok(new TokenRefreshResponse(token, request.getRefreshToken()));
                 })
                 .orElseThrow(() -> new TokenRefreshException(request.getRefreshToken(),
                         "Refresh token is not in database!"));

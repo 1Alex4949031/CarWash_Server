@@ -3,10 +3,12 @@ package ru.nsu.carwash_server.payload.response;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
 @AllArgsConstructor
 @Builder
+@NoArgsConstructor
 public class NewCarResponse {
 
     private String carNumber;
@@ -15,5 +17,5 @@ public class NewCarResponse {
 
     private Long userId;
 
-    private String carClass;
+    private int carClass;
 }

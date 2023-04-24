@@ -61,7 +61,7 @@ public class UserTest {
     private static final String TEST_USERNAME = "testuser";
     private static final String TEST_PASSWORD = "testpassword";
     private static final String TEST_CAR_NUMBER = "A322GG";
-    private static final String TEST_CAR_CLASS = "1";
+    private static final int TEST_CAR_CLASS = 1;
 
 
     @Autowired
@@ -147,8 +147,8 @@ public class UserTest {
         currentTimePlusFiveH.setTime(timeInMilli + fiveHours);
 
         BookingOrderRequest bookingOrderRequest = BookingOrderRequest.builder()
-                .price(3.123)
-                .name("Car washing")
+                //.price(3.123)
+               // .name("Car washing")
                 .startTime(currentTime)
                 .administrator("Misha")
                 .endTime(currentTimePlusFiveH)

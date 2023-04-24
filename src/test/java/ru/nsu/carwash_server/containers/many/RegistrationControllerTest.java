@@ -1,4 +1,4 @@
-package ru.nsu.carwash_server.testContainers;
+package ru.nsu.carwash_server.containers.many;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.test.web.server.LocalServerPort;
+import org.springframework.context.annotation.DependsOn;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -19,16 +20,21 @@ import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import ru.nsu.carwash_server.models.User;
+import ru.nsu.carwash_server.payload.request.LoginRequest;
 import ru.nsu.carwash_server.payload.request.SignupRequest;
+import ru.nsu.carwash_server.payload.response.JwtResponse;
 import ru.nsu.carwash_server.payload.response.MessageResponse;
 import ru.nsu.carwash_server.repository.UserRepository;
 
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 
+//Тут мы создаём отдельно контейнер для каждого теста
 //@FixMethodOrder(MethodSorters.NAME_ASCENDING) //задание порядка выполнения тестов по имени
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -81,5 +87,52 @@ public class RegistrationControllerTest {
         ObjectMapper objectMapper = new ObjectMapper();
         MessageResponse messageResponse = objectMapper.readValue(secondResponse.getBody(), MessageResponse.class);
         assertEquals("Error: телефон уже занят!", messageResponse.getMessage());
+    }
+
+    @Test
+    @DependsOn("testRegisterUser")
+    public void loginUserTest() throws JsonProcessingException {
+        // получаем зарегистрированного пользователя из базы данных
+        Optional<User> savedUser = userRepository.findByUsername("testuser");
+        assertTrue(savedUser.isPresent());
+
+        String baseUrl = "http://localhost:" + port + "api/auth/signin";
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        //Создаём нового первого пользователя
+        LoginRequest firstLoginRequest = LoginRequest.builder()
+                .username("testuser")
+                .password("password")
+                .build();
+        HttpEntity<LoginRequest> firstSignInRequest = new HttpEntity<>(firstLoginRequest, headers);
+        ResponseEntity<String> firstLoginResponse = restTemplate.postForEntity(baseUrl, firstSignInRequest, String.class);
+        assertEquals(HttpStatus.OK, firstLoginResponse.getStatusCode());
+        String responseBody = firstLoginResponse.getBody();
+
+        //десериализация строки JSON в объект LoginResponse, используя библиотеку Jackson
+        JwtResponse loginResponse = new ObjectMapper().readValue(responseBody, JwtResponse.class);
+        String bearerToken = loginResponse.getToken();
+        assertNotNull(bearerToken);
+        assertEquals("Bearer", loginResponse.getType());
+        assertEquals("testuser", loginResponse.getUsername());
+        assertTrue(loginResponse.getRoles().contains("ROLE_USER"));
+        assertEquals(1L, loginResponse.getId());
+
+        //Проверяем что никакую херню не вернули
+        assertFalse(loginResponse.getRoles().contains("ROLE_ADMIN"));
+
+        //Попробуем залогиниться человеком, которого нет в бд
+
+        LoginRequest secondLoginRequest = LoginRequest.builder()
+                .username("testUser")
+                .password("password")
+                .build();
+        HttpEntity<LoginRequest> secondSignInRequest = new HttpEntity<>(secondLoginRequest, headers);
+        ResponseEntity<String> secondLoginResponse = restTemplate.postForEntity(baseUrl, secondSignInRequest, String.class);
+        assertEquals(HttpStatus.BAD_REQUEST, secondLoginResponse.getStatusCode());
+        //Проверяем какой messageResponse, то есть json ошибки вернул запрос
+        ObjectMapper objectMapper = new ObjectMapper();
+        MessageResponse messageResponse = objectMapper.readValue(secondLoginResponse.getBody(), MessageResponse.class);
+        assertEquals("Error: такого пользователя не существует!", messageResponse.getMessage());
     }
 }

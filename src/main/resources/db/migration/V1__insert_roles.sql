@@ -1,10 +1,12 @@
 CREATE TABLE roles
 (
     id   SERIAL PRIMARY KEY,
-    name VARCHAR(255) NOT NULL
+    name VARCHAR(256) NOT NULL
 );
 
 INSERT INTO roles (name)
 VALUES ('ROLE_USER'),
        ('ROLE_MODERATOR'),
-       ('ROLE_ADMIN');
+       ('ROLE_ADMIN'),
+       ('ROLE_ADMINISTRATOR'),
+       ('ROLE_SPECIALIST');

@@ -15,6 +15,10 @@ public class TokenRefreshResponse {
 
   private String tokenType = "Bearer";
 
+  public TokenRefreshResponse() {
+    setTokenType("Bearer");
+  }
+
   public TokenRefreshResponse(String accessToken, String refreshToken) {
     this.accessToken = accessToken;
     this.refreshToken = refreshToken;
