@@ -1,4 +1,4 @@
-package ru.nsu.carwash_server.mock;
+package ru.nsu.carwash_server.containers.doesnt.work.mock;
 
 import com.jayway.jsonpath.JsonPath;
 import org.junit.Test;

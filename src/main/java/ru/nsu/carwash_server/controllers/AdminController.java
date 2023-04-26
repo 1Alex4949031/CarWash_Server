@@ -19,8 +19,6 @@ import ru.nsu.carwash_server.repository.UserRepository;
 import ru.nsu.carwash_server.security.services.RefreshTokenService;
 
 import javax.validation.Valid;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 @CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
@@ -59,9 +57,6 @@ public class AdminController {
     public ResponseEntity<?> getUserOrdersByAdmin(@Valid @RequestParam("username") String username) {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("Error: Пользователя с таким телефоном не существует"));
-        Set<String> autoSetString = user.getOrders().stream()
-                .map(Object::toString)
-                .collect(Collectors.toSet());
         return ResponseEntity.ok(new UserOrdersResponse(user.getOrders(), user));
     }
 
@@ -70,9 +65,6 @@ public class AdminController {
     public ResponseEntity<?> getUserCarsByAdmin(@Valid @RequestParam("username") String username) {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("Error: Пользователя с таким телефоном не существует"));
-        Set<String> autoSetString = user.getAuto().stream()
-                .map(Object::toString)
-                .collect(Collectors.toSet());
         return ResponseEntity.ok(new UserCarsResponse(user.getAuto(),
                 user));
     }

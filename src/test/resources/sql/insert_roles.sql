@@ -1,9 +1,9 @@
 INSERT INTO roles (name)
-VALUES ('ROLE_USER');
-INSERT INTO roles (name)
-VALUES ('ROLE_MODERATOR');
-INSERT INTO roles (name)
-VALUES ('ROLE_ADMIN');
+VALUES ('ROLE_USER'),
+       ('ROLE_MODERATOR'),
+       ('ROLE_ADMIN'),
+       ('ROLE_ADMINISTRATOR'),
+       ('ROLE_SPECIALIST');
 
 
 INSERT INTO orders_extra (name)
