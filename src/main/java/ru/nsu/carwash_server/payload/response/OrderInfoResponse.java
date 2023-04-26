@@ -2,18 +2,23 @@ package ru.nsu.carwash_server.payload.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
+import ru.nsu.carwash_server.models.OrdersAdditional;
+import ru.nsu.carwash_server.models.constants.EOrderMain;
 
 import java.util.Date;
+import java.util.List;
 
 @Data
 @AllArgsConstructor
+@NoArgsConstructor
 public class OrderInfoResponse {
 
     private Long id;
 
-    private Double price;
+    private EOrderMain mainOrder;
 
-    private String name;
+    private List<OrdersAdditional> extraOrders;
 
     private Date startTime;
 

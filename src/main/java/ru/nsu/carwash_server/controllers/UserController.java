@@ -50,6 +50,9 @@ public class UserController {
 
     @PostMapping("/saveNewCar")
     public ResponseEntity<?> saveNewCar(@Valid @RequestBody NewCarRequest newCarRequest) {
+        if (carRepository.existsByCarNumber(newCarRequest.getCarNumber())) {
+            return ResponseEntity.badRequest().body(new MessageResponse("Error: машина с таким номером уже есть!"));
+        }
         UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         Long userId = userDetails.getId();
         User user = new User(userId);

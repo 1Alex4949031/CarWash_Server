@@ -2,12 +2,14 @@ package ru.nsu.carwash_server.payload.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import ru.nsu.carwash_server.models.Auto;
 import ru.nsu.carwash_server.models.User;
 
 import java.util.Set;
 
 @Data
+@NoArgsConstructor
 @AllArgsConstructor
 public class UserCarsResponse {
 
