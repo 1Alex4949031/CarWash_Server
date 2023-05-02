@@ -36,14 +36,23 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping("/api/orders")
 public class OrderController {
-    @Autowired
-    OrdersRepository ordersRepository;
+
+    private final OrdersRepository ordersRepository;
+
+    private final ExtraOrdersRepository extraOrdersRepository;
+
+    private final CarRepository carRepository;
 
     @Autowired
-    ExtraOrdersRepository extraOrdersRepository;
-
-    @Autowired
-    CarRepository carRepository;
+    public OrderController(
+            OrdersRepository ordersRepository,
+            ExtraOrdersRepository extraOrdersRepository,
+            CarRepository carRepository
+    ) {
+        this.ordersRepository = ordersRepository;
+        this.extraOrdersRepository = extraOrdersRepository;
+        this.carRepository = carRepository;
+    }
 
     @PostMapping("/getBookedTimeInOneDay")
     public ResponseEntity<?> getBookedTimeInOneDay(@Valid @RequestBody GetBookedOrdersInTimeIntervalRequest orders) {

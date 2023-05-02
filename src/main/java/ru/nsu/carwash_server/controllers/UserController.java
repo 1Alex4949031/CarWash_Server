@@ -29,12 +29,22 @@ import javax.validation.Valid;
 @RestController
 @RequestMapping("/api/user")
 public class UserController {
+    private final UserRepository userRepository;
+
+    private final RefreshTokenService refreshTokenService;
+
+    private final CarRepository carRepository;
+
     @Autowired
-    UserRepository userRepository;
-    @Autowired
-    RefreshTokenService refreshTokenService;
-    @Autowired
-    CarRepository carRepository;
+    public UserController(
+            UserRepository userRepository,
+            RefreshTokenService refreshTokenService,
+            CarRepository carRepository
+    ) {
+        this.userRepository = userRepository;
+        this.refreshTokenService = refreshTokenService;
+        this.carRepository = carRepository;
+    }
 
     @PutMapping("/updateUserInfo")
     public ResponseEntity<?> changeUserInfo(@Valid @RequestBody UpdateUserInfoRequest updateUserInfoRequest) {

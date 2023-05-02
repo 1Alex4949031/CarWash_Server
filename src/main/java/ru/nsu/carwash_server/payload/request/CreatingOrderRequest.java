@@ -13,7 +13,7 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class BookingOrderRequest {
+public class CreatingOrderRequest {
 
     private String mainOrder;
 
@@ -28,13 +28,13 @@ public class BookingOrderRequest {
 
     private String specialist;
 
-    private Long autoId;
+    private String autoNumber;
 
     private int boxNumber;
 
-    private int bonuses;
-
     private String comments;
+
+    private String fullName;
 
     private boolean executed;
 }

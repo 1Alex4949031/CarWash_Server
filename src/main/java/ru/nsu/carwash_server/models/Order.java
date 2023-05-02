@@ -91,4 +91,19 @@ public class Order {
         this.auto = auto;
         this.user = user;
     }
+
+    public Order(EOrderMain mainOrder, List<OrdersAdditional> extraOrders,Date startTime, Date endTime, String administrator, String specialist,
+                 int boxNumber, boolean booked, boolean executed, String comments) {
+        this.eOrderMain = mainOrder;
+        this.ordersAdditional = extraOrders;
+        this.startTime = startTime;
+        this.endTime = endTime;
+        this.administrator = administrator;
+        this.specialist = specialist;
+        this.boxNumber = boxNumber;
+        this.bonuses = 0;
+        this.booked = booked;
+        this.executed = executed;
+        this.comments = comments;
+    }
 }

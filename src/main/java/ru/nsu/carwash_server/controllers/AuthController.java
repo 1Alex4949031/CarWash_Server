@@ -43,23 +43,35 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
-    @Autowired
-    AuthenticationManager authenticationManager;
+
+    private final AuthenticationManager authenticationManager;
+
+    private final UserRepository userRepository;
+
+    private final RoleRepository roleRepository;
+
+    private final PasswordEncoder encoder;
+
+    private final JwtUtils jwtUtils;
+
+    private final RefreshTokenService refreshTokenService;
 
     @Autowired
-    UserRepository userRepository;
-
-    @Autowired
-    RoleRepository roleRepository;
-
-    @Autowired
-    PasswordEncoder encoder;
-
-    @Autowired
-    JwtUtils jwtUtils;
-
-    @Autowired
-    RefreshTokenService refreshTokenService;
+    public AuthController(
+            AuthenticationManager authenticationManager,
+            UserRepository userRepository,
+            RoleRepository roleRepository,
+            PasswordEncoder encoder,
+            JwtUtils jwtUtils,
+            RefreshTokenService refreshTokenService
+    ) {
+        this.authenticationManager = authenticationManager;
+        this.userRepository = userRepository;
+        this.roleRepository = roleRepository;
+        this.encoder = encoder;
+        this.jwtUtils = jwtUtils;
+        this.refreshTokenService = refreshTokenService;
+    }
 
     @PostMapping("/signin")
     public ResponseEntity<?> authenticateUser(@Valid @RequestBody LoginRequest loginRequest) {
@@ -152,5 +164,41 @@ public class AuthController {
         Long userId = userDetails.getId();
         refreshTokenService.deleteByUserId(userId);
         return ResponseEntity.ok(new MessageResponse("Log out successful!"));
+    }
+
+    //Заход на страницу админа
+    @PostMapping("/admin/signin")
+    public ResponseEntity<?> signInAdmin(@Valid @RequestBody LoginRequest loginRequest) {
+        if (!userRepository.existsByUsername(loginRequest.getUsername())) {
+            return ResponseEntity.badRequest().body(new MessageResponse("Error: такого пользователя не существует!"));
+        }
+
+        Authentication authentication = authenticationManager
+                .authenticate(new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword()));
+
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+
+        UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+
+        List<String> roles = userDetails.getAuthorities().stream().map(GrantedAuthority::getAuthority)
+                .collect(Collectors.toList());
+        if (!roles.contains("ROLE_ADMIN") || !roles.contains("ROLE_MODERATOR") || !roles.contains("ROLE_ADMINISTRATOR")){
+            return ResponseEntity.badRequest().body(new MessageResponse("Error: Не достаточно прав!"));
+        }
+
+        String jwt = jwtUtils.generateJwtToken(userDetails);
+
+        RefreshToken refreshToken = refreshTokenService.createRefreshToken(userDetails.getId());
+
+        JwtResponse jwtResponse = JwtResponse
+                .builder()
+                .token(jwt)
+                .type("Bearer")
+                .refreshToken(refreshToken.getToken())
+                .id(userDetails.getId())
+                .username(userDetails.getUsername())
+                .roles(roles)
+                .build();
+        return ResponseEntity.ok(jwtResponse);
     }
 }

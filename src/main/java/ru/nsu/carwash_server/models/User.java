@@ -50,6 +50,7 @@ public class User {
     private int bonuses;
     @NotBlank
     @ToString.Exclude
+    @JsonIgnore
     @Column(nullable = false, unique = true)
     private String password;
 
