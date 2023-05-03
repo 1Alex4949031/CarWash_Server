@@ -20,18 +20,12 @@ import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.transaction.annotation.Transactional;
 import org.testcontainers.junit.jupiter.Testcontainers;
-import ru.nsu.carwash_server.models.RefreshToken;
 import ru.nsu.carwash_server.models.User;
 import ru.nsu.carwash_server.models.constants.ERole;
 import ru.nsu.carwash_server.payload.request.LoginRequest;
-import ru.nsu.carwash_server.payload.request.NewCarRequest;
 import ru.nsu.carwash_server.payload.request.SignupRequest;
-import ru.nsu.carwash_server.payload.request.TokenRefreshRequest;
 import ru.nsu.carwash_server.payload.response.JwtResponse;
 import ru.nsu.carwash_server.payload.response.MessageResponse;
-import ru.nsu.carwash_server.payload.response.NewCarResponse;
-import ru.nsu.carwash_server.payload.response.TokenRefreshResponse;
-import ru.nsu.carwash_server.repository.CarRepository;
 import ru.nsu.carwash_server.repository.ExtraOrdersRepository;
 import ru.nsu.carwash_server.repository.OrdersRepository;
 import ru.nsu.carwash_server.repository.RefreshTokenRepository;
@@ -72,9 +66,6 @@ public class AuthTests {
     private UserRepository userRepository;
 
     @Autowired
-    private CarRepository carRepository;
-
-    @Autowired
     private OrdersRepository ordersRepository;
 
     @Autowired
@@ -83,170 +74,170 @@ public class AuthTests {
     @Autowired
     private ExtraOrdersRepository extraOrdersRepository;
 
-    @Test
-    @Transactional
-    public void testEBookOrder() {
-        // получаем что пользователя из базы данных не сбежал
-        User savedUser = userRepository.findByUsername("testuser")
-                .orElseThrow(() -> new RuntimeException("Юзер почему-то пропал из бд...."));
-
-        //Проверяем то что прошлый тест реально сработал
-        assertTrue(carRepository.existsByCarNumber("Y363TT"));
-        assertFalse(refreshTokenRepository.findByUser(savedUser).isPresent());
-
-    }
-
-    @Test
-    @Transactional
-    public void testDRefreshToken() throws JsonProcessingException, InterruptedException {
-        // получаем что пользователя из базы данных не сбежал
-        User savedUser = userRepository.findByUsername("testuser")
-                .orElseThrow(() -> new RuntimeException("Юзер почему-то пропал из бд...."));
-
-        //Проверяем то что прошлый тест реально сработал
-        assertTrue(carRepository.existsByCarNumber("Y363TT"));
-
-
-        RefreshToken startRefreshToken = refreshTokenRepository.findByUser(savedUser)
-                .orElseThrow(() -> new RuntimeException("И где токен...."));
-
-        HttpHeaders refreshTokenHeaders = new HttpHeaders();
-        refreshTokenHeaders.setContentType(MediaType.APPLICATION_JSON);
-
-        //Зарефрешим текущий токен
-        TokenRefreshRequest tokenRefreshRequest = TokenRefreshRequest.builder()
-                .refreshToken(startRefreshToken.getToken())
-                .build();
-        HttpEntity<TokenRefreshRequest> tokenRefreshHTTPRequest = new HttpEntity<>(tokenRefreshRequest, refreshTokenHeaders);
-        ResponseEntity<String> tokenRefreshHTTPResponse = restTemplate
-                .postForEntity(API_AUTH_REFRESHTOKEN, tokenRefreshHTTPRequest, String.class);
-        assertEquals(HttpStatus.OK, tokenRefreshHTTPResponse.getStatusCode());
-        String responseBody = tokenRefreshHTTPResponse.getBody();
-        TokenRefreshResponse tokenRefreshResponse = new ObjectMapper().readValue(responseBody, TokenRefreshResponse.class);
-        bearerToken = tokenRefreshResponse.getAccessToken();
-        refreshToken = tokenRefreshRequest.getRefreshToken();
-
-        //Отравим какой-то запрос и проверим что время действия токена реально прошло
-        HttpHeaders newCarHeaders = new HttpHeaders();
-        newCarHeaders.setContentType(MediaType.APPLICATION_JSON);
-        newCarHeaders.set("Authorization", "Bearer " + bearerToken);
-        assertNotNull(bearerToken);
-
-        //Пытаем добавить новое авто с плохим токеном
-        Thread.sleep(4100);
-        NewCarRequest firstNewCarRequest = NewCarRequest.builder()
-                .carNumber("newCar")
-                .carClass(3)
-                .build();
-        HttpEntity<NewCarRequest> newCarHTTPRequest = new HttpEntity<>(firstNewCarRequest, newCarHeaders);
-        ResponseEntity<String> newCarResponse = restTemplate
-                .postForEntity(API_USER_SAVENEWCAR, newCarHTTPRequest, String.class);
-        assertEquals(HttpStatus.UNAUTHORIZED, newCarResponse.getStatusCode());
-
-        //Теперь сделаем опять хороший токен
-        //Зарефрешим текущий токен
-        TokenRefreshRequest newTokenRefreshRequest = TokenRefreshRequest.builder()
-                .refreshToken(refreshToken)
-                .build();
-        HttpEntity<TokenRefreshRequest> newTokenRefreshHTTPRequest = new HttpEntity<>(newTokenRefreshRequest, refreshTokenHeaders);
-        ResponseEntity<String> newTokenRefreshHTTPResponse = restTemplate
-                .postForEntity(API_AUTH_REFRESHTOKEN, newTokenRefreshHTTPRequest, String.class);
-        assertEquals(HttpStatus.OK, newTokenRefreshHTTPResponse.getStatusCode());
-        String newResponseBody = newTokenRefreshHTTPResponse.getBody();
-        TokenRefreshResponse newTokenRefreshResponse = new ObjectMapper().readValue(newResponseBody, TokenRefreshResponse.class);
-        bearerToken = newTokenRefreshResponse.getAccessToken();
-        refreshToken = newTokenRefreshResponse.getRefreshToken();
-        assertTrue(refreshTokenRepository.findByUser(savedUser).isPresent());
-
-        //Сделаем логаут и удалим новый рефрер токен
-        HttpHeaders logoutHeaders = new HttpHeaders();
-        logoutHeaders.setContentType(MediaType.APPLICATION_JSON);
-        logoutHeaders.set("Authorization", "Bearer " + bearerToken);
-
-        HttpEntity<String> logoutHTTPRequest = new HttpEntity<>(null, logoutHeaders);
-        ResponseEntity<String> logoutResponse = restTemplate
-                .postForEntity(API_AUTH_SIGNOUT, logoutHTTPRequest, String.class);
-        //Сам запрос выполнился хорошо, а из репозитория рефреш токена удалился токен
-        assertEquals(HttpStatus.OK, logoutResponse.getStatusCode());
-        assertFalse(refreshTokenRepository.findByUser(savedUser).isPresent());
-    }
-
-    /**
-     * Тут мы нашему любиму пользователю добавляем машину.
-     * Затем проверяем что нельзя добавить еще одну машину с таким же номером.
-     * Затем добавляем этому же пользователю вторую машину, смотрим что айди меняет и инфа.
-     *
-     * @throws JsonProcessingException если с джейсоном что-то пойдёт не так
-     */
-    @Test
-    @Transactional
-    public void testCAddCr() throws JsonProcessingException, InterruptedException {
-        // получаем что пользователя из базы данных не сбежал
-        User savedUser = userRepository.findByUsername("testuser")
-                .orElseThrow(() -> new RuntimeException("Юзер почему-то пропал из бд...."));
-        assertTrue(refreshTokenRepository.findByUser(savedUser).isPresent());
-        assertNotNull(bearerToken);
-        //assertTrue(roleRepository.findByName(ERole.ROLE_ADMIN).isPresent());
-
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
-        headers.set("Authorization", "Bearer " + bearerToken);
-
-        //Добавляем первое авто
-        NewCarRequest firstNewCarRequest = NewCarRequest.builder()
-                .carNumber("Y363TT")
-                .carClass(1)
-                .build();
-        HttpEntity<NewCarRequest> firstNewCarHTTPRequest = new HttpEntity<>(firstNewCarRequest, headers);
-        ResponseEntity<String> firstNewCarResponse = restTemplate
-                .postForEntity(API_USER_SAVENEWCAR, firstNewCarHTTPRequest, String.class);
-        assertEquals(HttpStatus.OK, firstNewCarResponse.getStatusCode());
-
-        //Проверяем джейсон из запроса
-        String responseBody = firstNewCarResponse.getBody();
-        NewCarResponse firstNewCarJSONResponse = new ObjectMapper().readValue(responseBody, NewCarResponse.class);
-        assertNotNull(bearerToken);
-        assertEquals(1L, firstNewCarJSONResponse.getCarId());
-        assertEquals("Y363TT", firstNewCarJSONResponse.getCarNumber());
-        assertEquals(1, firstNewCarJSONResponse.getCarClass());
-        assertTrue(carRepository.findByUser(savedUser).isPresent());
-        assertTrue(carRepository.existsByCarNumber("Y363TT"));
-
-
-        //Добавляем авто с таким же номером
-        NewCarRequest sameNewCarRequest = NewCarRequest.builder()
-                .carNumber("Y363TT")
-                .carClass(1)
-                .build();
-        HttpEntity<NewCarRequest> sameNewCarHTTPRequest = new HttpEntity<>(sameNewCarRequest, headers);
-        ResponseEntity<String> sameNewCarResponse = restTemplate
-                .postForEntity(API_USER_SAVENEWCAR, sameNewCarHTTPRequest, String.class);
-        assertEquals(HttpStatus.BAD_REQUEST, sameNewCarResponse.getStatusCode());
-        //Проверяем какой messageResponse, то есть json ошибки вернул запрос
-        ObjectMapper objectMapper = new ObjectMapper();
-        MessageResponse messageResponse = objectMapper.readValue(sameNewCarResponse.getBody(), MessageResponse.class);
-        assertEquals("Error: машина с таким номером уже есть!", messageResponse.getMessage());
-
-
-        //Добавим вторую машину нашего юзеру
-        NewCarRequest secondNewCarRequest = NewCarRequest.builder()
-                .carNumber("S555LL")
-                .carClass(2)
-                .build();
-        HttpEntity<NewCarRequest> secondNewCarHTTPRequest = new HttpEntity<>(secondNewCarRequest, headers);
-        ResponseEntity<String> secondNewCarResponse = restTemplate
-                .postForEntity(API_USER_SAVENEWCAR, secondNewCarHTTPRequest, String.class);
-        assertEquals(HttpStatus.OK, secondNewCarResponse.getStatusCode());
-        assertTrue(carRepository.existsByCarNumber("S555LL"));
-
-
-        //Проверяем джейсон из второго запроса
-        String secondResponseBody = secondNewCarResponse.getBody();
-        NewCarResponse secondNewCarJSONResponse = new ObjectMapper().readValue(secondResponseBody, NewCarResponse.class);
-        assertEquals(2L, secondNewCarJSONResponse.getCarId());
-        assertEquals("S555LL", secondNewCarJSONResponse.getCarNumber());
-        assertEquals(2, secondNewCarJSONResponse.getCarClass());
-    }
+//    @Test
+//    @Transactional
+//    public void testEBookOrder() {
+//        // получаем что пользователя из базы данных не сбежал
+//        User savedUser = userRepository.findByUsername("testuser")
+//                .orElseThrow(() -> new RuntimeException("Юзер почему-то пропал из бд...."));
+//
+//        //Проверяем то что прошлый тест реально сработал
+//        assertTrue(carRepository.existsByCarNumber("Y363TT"));
+//        assertFalse(refreshTokenRepository.findByUser(savedUser).isPresent());
+//
+//    }
+//
+//    @Test
+//    @Transactional
+//    public void testDRefreshToken() throws JsonProcessingException, InterruptedException {
+//        // получаем что пользователя из базы данных не сбежал
+//        User savedUser = userRepository.findByUsername("testuser")
+//                .orElseThrow(() -> new RuntimeException("Юзер почему-то пропал из бд...."));
+//
+//        //Проверяем то что прошлый тест реально сработал
+//        assertTrue(carRepository.existsByCarNumber("Y363TT"));
+//
+//
+//        RefreshToken startRefreshToken = refreshTokenRepository.findByUser(savedUser)
+//                .orElseThrow(() -> new RuntimeException("И где токен...."));
+//
+//        HttpHeaders refreshTokenHeaders = new HttpHeaders();
+//        refreshTokenHeaders.setContentType(MediaType.APPLICATION_JSON);
+//
+//        //Зарефрешим текущий токен
+//        TokenRefreshRequest tokenRefreshRequest = TokenRefreshRequest.builder()
+//                .refreshToken(startRefreshToken.getToken())
+//                .build();
+//        HttpEntity<TokenRefreshRequest> tokenRefreshHTTPRequest = new HttpEntity<>(tokenRefreshRequest, refreshTokenHeaders);
+//        ResponseEntity<String> tokenRefreshHTTPResponse = restTemplate
+//                .postForEntity(API_AUTH_REFRESHTOKEN, tokenRefreshHTTPRequest, String.class);
+//        assertEquals(HttpStatus.OK, tokenRefreshHTTPResponse.getStatusCode());
+//        String responseBody = tokenRefreshHTTPResponse.getBody();
+//        TokenRefreshResponse tokenRefreshResponse = new ObjectMapper().readValue(responseBody, TokenRefreshResponse.class);
+//        bearerToken = tokenRefreshResponse.getAccessToken();
+//        refreshToken = tokenRefreshRequest.getRefreshToken();
+//
+//        //Отравим какой-то запрос и проверим что время действия токена реально прошло
+//        HttpHeaders newCarHeaders = new HttpHeaders();
+//        newCarHeaders.setContentType(MediaType.APPLICATION_JSON);
+//        newCarHeaders.set("Authorization", "Bearer " + bearerToken);
+//        assertNotNull(bearerToken);
+//
+//        //Пытаем добавить новое авто с плохим токеном
+//        Thread.sleep(4100);
+//        NewCarRequest firstNewCarRequest = NewCarRequest.builder()
+//                .carNumber("newCar")
+//                .carClass(3)
+//                .build();
+//        HttpEntity<NewCarRequest> newCarHTTPRequest = new HttpEntity<>(firstNewCarRequest, newCarHeaders);
+//        ResponseEntity<String> newCarResponse = restTemplate
+//                .postForEntity(API_USER_SAVENEWCAR, newCarHTTPRequest, String.class);
+//        assertEquals(HttpStatus.UNAUTHORIZED, newCarResponse.getStatusCode());
+//
+//        //Теперь сделаем опять хороший токен
+//        //Зарефрешим текущий токен
+//        TokenRefreshRequest newTokenRefreshRequest = TokenRefreshRequest.builder()
+//                .refreshToken(refreshToken)
+//                .build();
+//        HttpEntity<TokenRefreshRequest> newTokenRefreshHTTPRequest = new HttpEntity<>(newTokenRefreshRequest, refreshTokenHeaders);
+//        ResponseEntity<String> newTokenRefreshHTTPResponse = restTemplate
+//                .postForEntity(API_AUTH_REFRESHTOKEN, newTokenRefreshHTTPRequest, String.class);
+//        assertEquals(HttpStatus.OK, newTokenRefreshHTTPResponse.getStatusCode());
+//        String newResponseBody = newTokenRefreshHTTPResponse.getBody();
+//        TokenRefreshResponse newTokenRefreshResponse = new ObjectMapper().readValue(newResponseBody, TokenRefreshResponse.class);
+//        bearerToken = newTokenRefreshResponse.getAccessToken();
+//        refreshToken = newTokenRefreshResponse.getRefreshToken();
+//        assertTrue(refreshTokenRepository.findByUser(savedUser).isPresent());
+//
+//        //Сделаем логаут и удалим новый рефрер токен
+//        HttpHeaders logoutHeaders = new HttpHeaders();
+//        logoutHeaders.setContentType(MediaType.APPLICATION_JSON);
+//        logoutHeaders.set("Authorization", "Bearer " + bearerToken);
+//
+//        HttpEntity<String> logoutHTTPRequest = new HttpEntity<>(null, logoutHeaders);
+//        ResponseEntity<String> logoutResponse = restTemplate
+//                .postForEntity(API_AUTH_SIGNOUT, logoutHTTPRequest, String.class);
+//        //Сам запрос выполнился хорошо, а из репозитория рефреш токена удалился токен
+//        assertEquals(HttpStatus.OK, logoutResponse.getStatusCode());
+//        assertFalse(refreshTokenRepository.findByUser(savedUser).isPresent());
+//    }
+//
+//    /**
+//     * Тут мы нашему любиму пользователю добавляем машину.
+//     * Затем проверяем что нельзя добавить еще одну машину с таким же номером.
+//     * Затем добавляем этому же пользователю вторую машину, смотрим что айди меняет и инфа.
+//     *
+//     * @throws JsonProcessingException если с джейсоном что-то пойдёт не так
+//     */
+//    @Test
+//    @Transactional
+//    public void testCAddCr() throws JsonProcessingException, InterruptedException {
+//        // получаем что пользователя из базы данных не сбежал
+//        User savedUser = userRepository.findByUsername("testuser")
+//                .orElseThrow(() -> new RuntimeException("Юзер почему-то пропал из бд...."));
+//        assertTrue(refreshTokenRepository.findByUser(savedUser).isPresent());
+//        assertNotNull(bearerToken);
+//        //assertTrue(roleRepository.findByName(ERole.ROLE_ADMIN).isPresent());
+//
+//        HttpHeaders headers = new HttpHeaders();
+//        headers.setContentType(MediaType.APPLICATION_JSON);
+//        headers.set("Authorization", "Bearer " + bearerToken);
+//
+//        //Добавляем первое авто
+//        NewCarRequest firstNewCarRequest = NewCarRequest.builder()
+//                .carNumber("Y363TT")
+//                .carClass(1)
+//                .build();
+//        HttpEntity<NewCarRequest> firstNewCarHTTPRequest = new HttpEntity<>(firstNewCarRequest, headers);
+//        ResponseEntity<String> firstNewCarResponse = restTemplate
+//                .postForEntity(API_USER_SAVENEWCAR, firstNewCarHTTPRequest, String.class);
+//        assertEquals(HttpStatus.OK, firstNewCarResponse.getStatusCode());
+//
+//        //Проверяем джейсон из запроса
+//        String responseBody = firstNewCarResponse.getBody();
+//        NewCarResponse firstNewCarJSONResponse = new ObjectMapper().readValue(responseBody, NewCarResponse.class);
+//        assertNotNull(bearerToken);
+//        assertEquals(1L, firstNewCarJSONResponse.getCarId());
+//        assertEquals("Y363TT", firstNewCarJSONResponse.getCarNumber());
+//        assertEquals(1, firstNewCarJSONResponse.getCarClass());
+//        assertTrue(carRepository.findByUser(savedUser).isPresent());
+//        assertTrue(carRepository.existsByCarNumber("Y363TT"));
+//
+//
+//        //Добавляем авто с таким же номером
+//        NewCarRequest sameNewCarRequest = NewCarRequest.builder()
+//                .carNumber("Y363TT")
+//                .carClass(1)
+//                .build();
+//        HttpEntity<NewCarRequest> sameNewCarHTTPRequest = new HttpEntity<>(sameNewCarRequest, headers);
+//        ResponseEntity<String> sameNewCarResponse = restTemplate
+//                .postForEntity(API_USER_SAVENEWCAR, sameNewCarHTTPRequest, String.class);
+//        assertEquals(HttpStatus.BAD_REQUEST, sameNewCarResponse.getStatusCode());
+//        //Проверяем какой messageResponse, то есть json ошибки вернул запрос
+//        ObjectMapper objectMapper = new ObjectMapper();
+//        MessageResponse messageResponse = objectMapper.readValue(sameNewCarResponse.getBody(), MessageResponse.class);
+//        assertEquals("Error: машина с таким номером уже есть!", messageResponse.getMessage());
+//
+//
+//        //Добавим вторую машину нашего юзеру
+//        NewCarRequest secondNewCarRequest = NewCarRequest.builder()
+//                .carNumber("S555LL")
+//                .carClass(2)
+//                .build();
+//        HttpEntity<NewCarRequest> secondNewCarHTTPRequest = new HttpEntity<>(secondNewCarRequest, headers);
+//        ResponseEntity<String> secondNewCarResponse = restTemplate
+//                .postForEntity(API_USER_SAVENEWCAR, secondNewCarHTTPRequest, String.class);
+//        assertEquals(HttpStatus.OK, secondNewCarResponse.getStatusCode());
+//        assertTrue(carRepository.existsByCarNumber("S555LL"));
+//
+//
+//        //Проверяем джейсон из второго запроса
+//        String secondResponseBody = secondNewCarResponse.getBody();
+//        NewCarResponse secondNewCarJSONResponse = new ObjectMapper().readValue(secondResponseBody, NewCarResponse.class);
+//        assertEquals(2L, secondNewCarJSONResponse.getCarId());
+//        assertEquals("S555LL", secondNewCarJSONResponse.getCarNumber());
+//        assertEquals(2, secondNewCarJSONResponse.getCarClass());
+//    }
 
     /**
      * Логинимся в аккаунт, получаем jwt токен для дальнейших операций.

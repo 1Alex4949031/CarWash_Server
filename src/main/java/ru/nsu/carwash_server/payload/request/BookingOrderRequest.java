@@ -22,8 +22,6 @@ public class BookingOrderRequest {
     @NotNull
     private Date startTime;
 
-    private Date endTime;
-
     private String administrator;
 
     private String specialist;
@@ -35,6 +33,10 @@ public class BookingOrderRequest {
     private int bonuses;
 
     private String comments;
+
+    private String autoNumber;
+
+    private int autoType;
 
     private boolean executed;
 }

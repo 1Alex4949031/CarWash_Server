@@ -5,12 +5,9 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import ru.nsu.carwash_server.models.constants.EOrderMain;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -19,9 +16,9 @@ import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
-import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
@@ -37,9 +34,6 @@ public class Order {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Enumerated(EnumType.STRING)
-    private EOrderMain eOrderMain;
-
     private Date startTime;
 
     private Date endTime;
@@ -48,19 +42,21 @@ public class Order {
 
     private String specialist;
 
+    private String autoNumber;
+
+    private int autoType;
+
     private int boxNumber;
 
     private int bonuses;
 
     private boolean booked;
 
+    private int price;
+
     private boolean executed = false;
 
     private String comments;
-
-    @OneToOne(cascade = CascadeType.MERGE)
-    @JoinColumn(name = "auto_id", referencedColumnName = "id")
-    private Auto auto;
 
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(name = "orders_extra_link",
@@ -74,13 +70,11 @@ public class Order {
     @JsonIgnore
     private User user;
 
-    public Order(EOrderMain mainOrder, List<OrdersAdditional> extraOrders,Date startTime, Date endTime, String administrator, String specialist,
+    public Order(List<OrdersAdditional> extraOrders,Date startTime, String administrator, String specialist,
                  int boxNumber, int bonuses, boolean booked, boolean executed, String comments,
-                 Auto auto, User user) {
-        this.eOrderMain = mainOrder;
+                 String autoNumber, int autoType, User user) {
         this.ordersAdditional = extraOrders;
         this.startTime = startTime;
-        this.endTime = endTime;
         this.administrator = administrator;
         this.specialist = specialist;
         this.boxNumber = boxNumber;
@@ -88,13 +82,14 @@ public class Order {
         this.booked = booked;
         this.executed = executed;
         this.comments = comments;
-        this.auto = auto;
+        this.autoNumber = autoNumber;
+        this.autoType = autoType;
         this.user = user;
+        setEndTimeForCarType(autoType);
     }
 
-    public Order(EOrderMain mainOrder, List<OrdersAdditional> extraOrders,Date startTime, Date endTime, String administrator, String specialist,
-                 int boxNumber, boolean booked, boolean executed, String comments) {
-        this.eOrderMain = mainOrder;
+    public Order( List<OrdersAdditional> extraOrders,Date startTime, Date endTime, String administrator, String specialist,
+                 int boxNumber, String autoNumber, int autoType, String comments) {
         this.ordersAdditional = extraOrders;
         this.startTime = startTime;
         this.endTime = endTime;
@@ -102,8 +97,26 @@ public class Order {
         this.specialist = specialist;
         this.boxNumber = boxNumber;
         this.bonuses = 0;
-        this.booked = booked;
-        this.executed = executed;
+        this.autoType = autoType;
+        this.autoNumber = autoNumber;
+        this.executed = false;
+        this.booked = true;
         this.comments = comments;
+    }
+
+    private void setEndTimeForCarType(int carType){
+        int price = 0;
+        int minutes = 15;
+        for (var orders : ordersAdditional) {
+            price += orders.getName().getOrderInfo().getPriceForBodyType(carType);
+            minutes += orders.getName().getOrderInfo().getTimeForBodyType(carType);
+        }
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(this.startTime);
+        calendar.add(Calendar.MINUTE, minutes);
+
+        this.endTime = calendar.getTime();
+
+        this.price = price;
     }
 }

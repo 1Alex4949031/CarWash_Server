@@ -4,7 +4,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 @Setter @Getter
-public class OrderService {
+public class OrderInfo {
 
     private String name;
 
@@ -20,8 +20,8 @@ public class OrderService {
 
     private int priceForBodyType3;
 
-    public OrderService(String name, int theSameTime,
-                        int priceForBodyType1, int priceForBodyType2, int priceForBodyType3) {
+    public OrderInfo(String name, int theSameTime,
+                     int priceForBodyType1, int priceForBodyType2, int priceForBodyType3) {
         this.name = name;
         this.timeForBodyType1 = theSameTime;
         this.timeForBodyType2 = theSameTime;
@@ -31,8 +31,8 @@ public class OrderService {
         this.priceForBodyType3 = priceForBodyType3;
     }
 
-    public OrderService(String name, int theSameTime,
-                        int theSamePrice) {
+    public OrderInfo(String name, int theSameTime,
+                     int theSamePrice) {
         this.name = name;
         this.timeForBodyType1 = theSameTime;
         this.timeForBodyType2 = theSameTime;
@@ -42,8 +42,8 @@ public class OrderService {
         this.priceForBodyType3 = theSamePrice;
     }
 
-    public OrderService(String name, int timeForBodyType1, int timeForBodyType2, int timeForBodyType3,
-                        int priceForBodyType1, int priceForBodyType2, int priceForBodyType3) {
+    public OrderInfo(String name, int timeForBodyType1, int timeForBodyType2, int timeForBodyType3,
+                     int priceForBodyType1, int priceForBodyType2, int priceForBodyType3) {
         this.name = name;
         this.timeForBodyType1 = timeForBodyType1;
         this.timeForBodyType2 = timeForBodyType2;

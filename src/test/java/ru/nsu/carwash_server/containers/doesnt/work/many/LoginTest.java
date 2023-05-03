@@ -21,7 +21,6 @@ import ru.nsu.carwash_server.payload.request.LoginRequest;
 import ru.nsu.carwash_server.payload.request.SignupRequest;
 import ru.nsu.carwash_server.payload.response.JwtResponse;
 import ru.nsu.carwash_server.payload.response.MessageResponse;
-import ru.nsu.carwash_server.repository.CarRepository;
 import ru.nsu.carwash_server.repository.ExtraOrdersRepository;
 import ru.nsu.carwash_server.repository.OrdersRepository;
 import ru.nsu.carwash_server.repository.RefreshTokenRepository;
@@ -56,8 +55,6 @@ public class LoginTest {
     @Autowired
     private UserRepository userRepository;
 
-    @Autowired
-    private CarRepository carRepository;
 
     @Autowired
     private OrdersRepository ordersRepository;

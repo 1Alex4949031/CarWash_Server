@@ -25,6 +25,10 @@ public class UpdateOrderInfoRequest {
 
     private String administrator;
 
+    private String autoNumber;
+
+    private int autoType;
+
     private String specialist;
 
     private Long autoId;

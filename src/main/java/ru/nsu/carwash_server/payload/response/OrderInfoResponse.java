@@ -4,7 +4,6 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import ru.nsu.carwash_server.models.OrdersAdditional;
-import ru.nsu.carwash_server.models.constants.EOrderMain;
 
 import java.util.Date;
 import java.util.List;
@@ -16,9 +15,7 @@ public class OrderInfoResponse {
 
     private Long id;
 
-    private EOrderMain mainOrder;
-
-    private List<OrdersAdditional> extraOrders;
+    private List<OrdersAdditional> orders;
 
     private Date startTime;
 
@@ -30,6 +27,10 @@ public class OrderInfoResponse {
 
     private int boxNumber;
 
+    private String autoNumber;
+
+    private int autoType;
+
     private int bonuses;
 
     private boolean booked;
@@ -39,4 +40,6 @@ public class OrderInfoResponse {
     private String comments;
 
     private Long userId;
+
+    private int price;
 }

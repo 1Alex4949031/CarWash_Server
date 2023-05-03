@@ -11,7 +11,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import ru.nsu.carwash_server.models.User;
-import ru.nsu.carwash_server.payload.response.UserCarsResponse;
 import ru.nsu.carwash_server.payload.response.UserInformationResponse;
 import ru.nsu.carwash_server.payload.response.UserOrdersResponse;
 import ru.nsu.carwash_server.repository.ExtraOrdersRepository;
@@ -72,7 +71,7 @@ public class AdminController {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("Error: Пользователя с таким телефоном не существует"));
         return ResponseEntity.ok(new UserInformationResponse(user.getOrders(), user.getId(),
-                user.getAuto(), user.getFullName(), user.getPhone(), user.getEmail(),
+                user.getFullName(), user.getPhone(), user.getEmail(),
                 user.getBonuses(), user.getRoles()));
     }
 
@@ -83,16 +82,6 @@ public class AdminController {
                 .orElseThrow(() -> new RuntimeException("Error: Пользователя с таким телефоном не существует"));
         return ResponseEntity.ok(new UserOrdersResponse(user.getOrders(), user));
     }
-
-    @GetMapping("/getUserCarsByAdmin")
-    @PreAuthorize("hasRole('MODERATOR') or hasRole('ADMIN')")
-    public ResponseEntity<?> getUserCarsByAdmin(@Valid @RequestParam("username") String username) {
-        User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("Error: Пользователя с таким телефоном не существует"));
-        return ResponseEntity.ok(new UserCarsResponse(user.getAuto(),
-                user));
-    }
-
 
 //    @PostMapping("/createOrder")
 //    @PreAuthorize("hasRole('ADMINISTRATOR') or hasRole('ADMIN')")
