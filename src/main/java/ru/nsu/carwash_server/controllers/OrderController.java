@@ -46,11 +46,19 @@ public class OrderController {
         this.extraOrdersRepository = extraOrdersRepository;
     }
 
-    @PostMapping("/getBookedTimeInOneDay")
-    public ResponseEntity<?> getBookedTimeInOneDay(@Valid @RequestBody GetBookedOrdersInTimeIntervalRequest orders) {
+    @PostMapping("/getBookedTimeInTimeInterval")
+    public ResponseEntity<?> getBookedTimeInTimeInterval(@Valid @RequestBody GetBookedOrdersInTimeIntervalRequest bookedOrdersInTimeIntervalRequest) {
         Set<Order> order = ordersRepository
-                .getBookedOrdersInOneDay(orders.getStartTime(),
-                        orders.getEndTime());
+                .getBookedOrdersInTimeInterval(bookedOrdersInTimeIntervalRequest.getStartTime(),
+                        bookedOrdersInTimeIntervalRequest.getEndTime());
+        return ResponseEntity.ok(new GetBookedOrdersInTimeIntervalResponse(order));
+    }
+
+    @PostMapping("/getBookedTimeInOneDay")
+    public ResponseEntity<?> getBookedTimeInOneDay(@Valid @RequestBody GetBookedOrdersInTimeIntervalRequest bookedOrdersInTimeIntervalRequest) {
+        Set<Order> order = ordersRepository
+                .getBookedOrdersInOneDay(bookedOrdersInTimeIntervalRequest.getStartTime(),
+                        bookedOrdersInTimeIntervalRequest.getEndTime());
         return ResponseEntity.ok(new GetBookedOrdersInTimeIntervalResponse(order));
     }
 
