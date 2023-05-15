@@ -13,11 +13,11 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class BookingOrderRequest {
+public class BookingTireOrderRequest {
 
-    private String mainOrder;
+    private List<String> orders;
 
-    private List<String> extraOrders;
+    private String wheelR;
 
     @NotNull
     private Date startTime;
@@ -39,4 +39,6 @@ public class BookingOrderRequest {
     private int autoType;
 
     private boolean executed;
+
+    private Integer price = null;
 }

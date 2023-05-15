@@ -4,7 +4,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import ru.nsu.carwash_server.models.Role;
 
 import javax.validation.constraints.Email;
 import java.util.Set;
@@ -16,11 +15,11 @@ import java.util.Set;
 public class UpdateUserInfoRequest {
 
     @Email
-    private String email;
+    private String email = null;
 
-    private String username;
+    private String username = null;
 
-    private String fullName;
+    private String fullName = null;
 
-    private Set<Role> role;
+    private Set<String> roles = null;
 }

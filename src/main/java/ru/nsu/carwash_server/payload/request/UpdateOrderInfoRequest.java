@@ -17,25 +17,25 @@ public class UpdateOrderInfoRequest {
     @NotNull
     private Long orderId;
 
-    private Double price;
+    private Integer price = null;
 
-    private String name;
+    private String name = null;
 
-    private Date startTime;
+    private Date startTime = null;
 
-    private String administrator;
+    private String administrator = null;
 
-    private String autoNumber;
+    private String autoNumber = null;
 
-    private int autoType;
+    private Integer autoType = null;
 
-    private String specialist;
+    private String specialist = null;
 
-    private Long autoId;
+    private Long autoId = null;
 
-    private int boxNumber;
+    private Integer boxNumber;
 
-    private int bonuses;
+    private Integer bonuses;
 
     private String comments;
 

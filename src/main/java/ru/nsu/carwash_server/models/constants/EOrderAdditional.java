@@ -11,30 +11,32 @@ public enum EOrderAdditional {
     TURBO_DRYING(new OrderInfo("Турбо сушка кузова", 25, 550,
             600, 660)),
 
-    BODY_BLOW(new OrderInfo("Продувка кузова", 7, 110,
-            140, 160)),
+    BODY_BLOW(new OrderInfo("Продувка кузова", 7,
+            110, 140, 160)),
 
-    LOCKS_AND_MIRRORS_BLOW(new OrderInfo("Продувка замков, зеркал", 5, 70)),
+    LOCKS_AND_MIRRORS_BLOW(new OrderInfo("Продувка замков, зеркал",
+            5, 70)),
 
-    SILICONE_TREATMENT(new OrderInfo("Обработка силиконом", 5, 110,
-            140, 160)),
+    SILICONE_TREATMENT(new OrderInfo("Обработка силиконом", 5,
+            110, 140, 160)),
 
-    LOCK_FLUID_TREATMENT(new OrderInfo("Обработка замков жидкостью", 2, 70)),
+    LOCK_FLUID_TREATMENT(new OrderInfo("Обработка замков жидкостью",
+            2, 70)),
 
-    LEATHER_CONDITIONER_TREATMENT(new OrderInfo("Обработка кожи кондиционером 1 эл.", 7,
-            110)),
+    LEATHER_CONDITIONER_TREATMENT(new OrderInfo("Обработка кожи кондиционером 1 эл.",
+            7, 110)),
 
     SALON_PLASTIC_POLISH(new OrderInfo("Полироль пластика салона", 5,
             140, 150, 180)),
 
-    PANEL_PLASTIC_POLISH(new OrderInfo("Полироль пластика панель", 3, 80,
-            100, 100)),
+    PANEL_PLASTIC_POLISH(new OrderInfo("Полироль пластика панель", 3,
+            80, 100, 100)),
 
     TRUNK_PLASTIC_POLISH(new OrderInfo("Полироль пластика багажник", 3,
             60, 80, 90)),
 
-    RADIATOR_WASH(new OrderInfo("Наружная мойка радиатора", 0, 90,
-            110, 170)), //не указано время, поэтому 0
+    RADIATOR_WASH(new OrderInfo("Наружная мойка радиатора", 0,
+            90, 110, 170)), //не указано время, поэтому 0
 
     TIRE_BLACKENING(new OrderInfo("Чернение шин 4 штуки", 3, 110,
             170, 170)),
@@ -49,18 +51,21 @@ public enum EOrderAdditional {
 
     SIDE_GLASS_NANO_GLASS_COATING(new OrderInfo("Покрытие бокового стекла Nano Glass 1 элемент",
             15, 220, 280, 330)),
-    COMPLEX_ALL_GLASSES(new OrderInfo("Комплекс всех стёкол", 30, 1650, 2200, 2750)),
+    COMPLEX_ALL_GLASSES(new OrderInfo("Комплекс всех стёкол", 30,
+            1650, 2200, 2750)),
 
-    ENGINE_CHEMICAL_CLEANING(new OrderInfo("Диэлектрическая химчистка двигателя", 40,
-            900, 1000, 1100)),
+    ENGINE_CHEMICAL_CLEANING(new OrderInfo("Диэлектрическая химчистка двигателя",
+            40, 900, 1000, 1100)),
 
-    DISC_CHEMICAL_CLEANING(new OrderInfo("Химчистка дисков 4 штуки", 20, 660,
-            900, 1100)),
+    DISC_CHEMICAL_CLEANING(new OrderInfo("Химчистка дисков 4 штуки", 20,
+            660, 900, 1100)),
 
-    TRUNK_CHEMICAL_CLEANING(new OrderInfo("Химчистка багажника", 120, 180,
-            300, 1100, 1650, 1650)),
+    TRUNK_CHEMICAL_CLEANING(new OrderInfo("Химчистка багажника", 120,
+            180, 300,
+            1100, 1650, 1650)),
 
-    DOOR_CHEMICAL_CLEANING(new OrderInfo("Химчистка двери 1 элемент", 20,
+    DOOR_CHEMICAL_CLEANING(new OrderInfo("Химчистка двери 1 элемент",
+            20,
             30, 40, 550, 550, 550)),
 
     TEXTILE_SEAT_CHEMICAL_CLEANING(new OrderInfo("Химчистка кресло (текстиль) 1 элемент", 20,
@@ -133,13 +138,19 @@ public enum EOrderAdditional {
 
     WINDSHIELD_CLEANING(new OrderInfo("Чистка ветрового стекла", 5, 80,
             100, 150)),
-    POLISHING_RESTORATION(new OrderInfo("Полировка восстановительная", 480, 8000, 10000, 14000)),
-    DEEP_ABRASIVE_POLISHING(new OrderInfo("Глубокая абразивная полировка", 1680, 12000, 14000, 18000)),
+    POLISHING_RESTORATION(new OrderInfo("Полировка восстановительная", 480,
+            8000, 10000, 14000)),
+    DEEP_ABRASIVE_POLISHING(new OrderInfo("Глубокая абразивная полировка", 1680,
+            12000, 14000, 18000)),
     HEADLINE_POLISHING(new OrderInfo("Полировка фар 1 шт", 20, 500)),
-    PROFESSIONAL_SONIX_POLYMER_COATING(new OrderInfo("Полимер Sonax до 6 месяцев", 300, 1500)),
-    PROFESSIONAL_QUARTZ_CERAMIC_COATING(new OrderInfo("Кварцекерамическое покрытие CAN COAT до 6 месяцев", 480, 5000, 5000, 5000)),
-    PROFESSIONAL_KOCH_CHEMIE_1K_NANO(new OrderInfo("Koch Chemie 1K-NANO 1 год", 480, 7000, 8000, 10000)),
-    PROFESSIONAL_CERAMIC_COATING_2_LAYERS_ONE_LAYER(new OrderInfo("Профессиональное покрытие керамика (2 слоя + 1 слой) до 3 лет", 1440, 20000, 22000, 25000));
+    PROFESSIONAL_SONIX_POLYMER_COATING(new OrderInfo("Полимер Sonax до 6 месяцев", 300,
+            1500)),
+    PROFESSIONAL_QUARTZ_CERAMIC_COATING(new OrderInfo("Кварцекерамическое покрытие CAN COAT до 6 месяцев",
+            480, 5000)),
+    PROFESSIONAL_KOCH_CHEMIE_1K_NANO(new OrderInfo("Koch Chemie 1K-NANO 1 год",
+            480, 7000, 8000, 10000)),
+    PROFESSIONAL_CERAMIC_COATING_2_LAYERS_ONE_LAYER(new OrderInfo("Профессиональное покрытие керамика (2 слоя + 1 слой) до 3 лет",
+            1440, 20000, 22000, 25000));
 
 
     private final OrderInfo orderInfo;

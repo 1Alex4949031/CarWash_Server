@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import ru.nsu.carwash_server.models.User;
+import ru.nsu.carwash_server.models.helpers.OrdersPriceAndTimeInfo;
 import ru.nsu.carwash_server.payload.request.UpdateUserInfoRequest;
 import ru.nsu.carwash_server.payload.response.MessageResponse;
 import ru.nsu.carwash_server.payload.response.UserOrdersResponse;
@@ -18,6 +19,8 @@ import ru.nsu.carwash_server.security.services.RefreshTokenService;
 import ru.nsu.carwash_server.security.services.UserDetailsImpl;
 
 import javax.validation.Valid;
+import java.util.ArrayList;
+import java.util.List;
 
 @CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
@@ -39,6 +42,8 @@ public class UserController {
     public ResponseEntity<?> changeUserInfo(@Valid @RequestBody UpdateUserInfoRequest updateUserInfoRequest) {
         UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         Long userId = userDetails.getId();
+
+
         userRepository.changeUserInfo(updateUserInfoRequest.getEmail(), updateUserInfoRequest.getUsername(),
                 userId, updateUserInfoRequest.getFullName());
         refreshTokenService.deleteByUserId(userId);
@@ -53,6 +58,10 @@ public class UserController {
         Long userId = userDetails.getId();
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("Error: Пользователя с таким телефоном не существует"));
-        return ResponseEntity.ok(new UserOrdersResponse(user.getOrders(), user));
+        List<OrdersPriceAndTimeInfo> ordersPriceAndTimeInfo = new ArrayList<>();
+        for (var item: user.getOrders()){
+            ordersPriceAndTimeInfo.add(new OrdersPriceAndTimeInfo(item.getOrderType(), item.getPrice(),item.getStartTime()));
+        }
+        return ResponseEntity.ok(new UserOrdersResponse(ordersPriceAndTimeInfo));
     }
 }

@@ -1,20 +1,14 @@
-package ru.nsu.carwash_server.payload.response;
+package ru.nsu.carwash_server.models.helpers;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
 import java.util.Date;
 import java.util.List;
 
-@Data
 @AllArgsConstructor
-@NoArgsConstructor
-public class OrderInfoResponse {
-
-    private Long id;
-
-    private List<String> orders;
+@Data
+public class SingleOrderResponse {
 
     private Date startTime;
 
@@ -24,23 +18,25 @@ public class OrderInfoResponse {
 
     private String specialist;
 
-    private int boxNumber;
-
     private String autoNumber;
 
     private int autoType;
 
+    private int boxNumber;
+
     private int bonuses;
 
+    private int price;
+
+    private String wheelR;
     private boolean executed;
 
     private String comments;
 
-    private Long userId;
+    List<String> orders;
 
-    private int price;
+    private String userNumber;
 
     private String orderType;
-
-    private String wheelR;
 }
+

@@ -5,12 +5,12 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import ru.nsu.carwash_server.models.Order;
 
-import java.util.Set;
+import java.util.List;
 
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 public class GetBookedOrdersInTimeIntervalResponse {
 
-    private Set<Order> orders;
+    private List<Order> orders;
 }

@@ -6,11 +6,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
-import ru.nsu.carwash_server.models.constants.EOrderAdditional;
 
 import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -18,21 +15,31 @@ import javax.persistence.Table;
 
 
 @Entity
-@Table(name = "orders_extra")
+@Table(name = "orders_washing")
 @NoArgsConstructor
 @ToString
 @Getter @Setter
 @AllArgsConstructor
-public class OrdersAdditional {
+public class OrdersWashing {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @JsonIgnore
     private Integer id;
 
-    @Enumerated(EnumType.STRING)
-    private EOrderAdditional name;
+    private String name;
 
-    public OrdersAdditional(EOrderAdditional eOrderAdditional) {
-        this.name = eOrderAdditional;
-    }
+    private int priceFirstType;
+
+    private int priceSecondType;
+
+    private int priceThirdType;
+
+    private int timeFirstType;
+
+    private int timeSecondType;
+
+    private int timeThirdType;
+
+    private String role;
+
 }
