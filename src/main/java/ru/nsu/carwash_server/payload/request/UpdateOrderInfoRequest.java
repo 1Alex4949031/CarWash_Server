@@ -17,6 +17,10 @@ public class UpdateOrderInfoRequest {
     @NotNull
     private Long orderId;
 
+    private Long userId;
+
+    private String orderType;
+
     private Integer price = null;
 
     private String name = null;
@@ -31,15 +35,13 @@ public class UpdateOrderInfoRequest {
 
     private String specialist = null;
 
-    private Long autoId = null;
+    private Integer boxNumber = null;
 
-    private Integer boxNumber;
-
-    private Integer bonuses;
+    private Integer bonuses = null;
 
     private String comments;
 
     private boolean executed;
 
-    private Date endTime;
+    private Date endTime = null;
 }

@@ -42,4 +42,8 @@ public class OrdersWashing {
 
     private String role;
 
+    private String includedIn; //включена в какую-то услугу
+
+    private String associatedOrder; // идём вместе с каким-то заказом
+
 }

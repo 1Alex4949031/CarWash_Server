@@ -6,6 +6,7 @@ public enum EBox {
     THIRD_BOX,
     FOURTH_BOX,
     FIFTH_BOX,
+    STREET,
     SIXTH_BOX,
     SEVENTH_BOX,
     EIGHTH_BOX,

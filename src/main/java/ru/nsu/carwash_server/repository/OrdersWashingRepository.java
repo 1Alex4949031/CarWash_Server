@@ -8,6 +8,7 @@ import org.springframework.stereotype.Repository;
 import ru.nsu.carwash_server.models.OrdersWashing;
 
 import javax.transaction.Transactional;
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -26,4 +27,14 @@ public interface OrdersWashingRepository extends JpaRepository<OrdersWashing, Lo
                                 @Param("PriceSecondType") Integer priceSecond, @Param("PriceThirdType") Integer priceThirdType,
                                 @Param("TimeFirstType") Integer timeFirst, @Param("TimeSecondType") Integer timeSecond,
                                 @Param("TimeThirdType") Integer timeThird, @Param("Role") String role);
+
+    //Получить с каким заказом вместе идут услуги
+    @Transactional
+    @Query(value = "SELECT name FROM orders_washing WHERE associated_order = :MainOrder", nativeQuery = true)
+    Optional<List<String>> findAllConnected(@Param("MainOrder") String name);
+
+    //Получить какие услуги уже учитаны в этом заказе
+    @Transactional
+    @Query(value = "SELECT name FROM orders_washing WHERE included_in = :MainOrder", nativeQuery = true)
+    Optional<List<String>> findAllIncluded(@Param("MainOrder") String name);
 }

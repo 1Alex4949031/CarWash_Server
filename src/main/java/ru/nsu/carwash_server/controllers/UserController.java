@@ -42,14 +42,14 @@ public class UserController {
     public ResponseEntity<?> changeUserInfo(@Valid @RequestBody UpdateUserInfoRequest updateUserInfoRequest) {
         UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         Long userId = userDetails.getId();
-
-
+        var user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("Error: Пользователя с таким телефоном не существует"));
         userRepository.changeUserInfo(updateUserInfoRequest.getEmail(), updateUserInfoRequest.getUsername(),
                 userId, updateUserInfoRequest.getFullName());
         refreshTokenService.deleteByUserId(userId);
         return ResponseEntity.ok(new MessageResponse("Пользователь " + userId
-                + " получил почту " + updateUserInfoRequest.getEmail()
-                + " и новый телефон " + updateUserInfoRequest.getUsername()));
+                + " получил почту " + user.getEmail()
+                + " и новый телефон " + user.getUsername()));
     }
 
     @GetMapping("/getUserOrders")

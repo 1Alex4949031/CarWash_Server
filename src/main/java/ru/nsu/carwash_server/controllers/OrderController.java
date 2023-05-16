@@ -5,9 +5,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import ru.nsu.carwash_server.models.Order;
 import ru.nsu.carwash_server.models.OrdersPolishing;
@@ -19,7 +22,10 @@ import ru.nsu.carwash_server.payload.request.BookingTireOrderRequest;
 import ru.nsu.carwash_server.payload.request.BookingWashingOrderRequest;
 import ru.nsu.carwash_server.payload.request.GetBookedOrdersInTimeIntervalRequest;
 import ru.nsu.carwash_server.payload.request.OrdersArrayPriceTimeRequest;
+import ru.nsu.carwash_server.payload.request.UpdateOrderInfoRequest;
+import ru.nsu.carwash_server.payload.response.ConnectedOrdersResponse;
 import ru.nsu.carwash_server.payload.response.GetBookedOrdersInTimeIntervalResponse;
+import ru.nsu.carwash_server.payload.response.MessageResponse;
 import ru.nsu.carwash_server.payload.response.OrderInfoResponse;
 import ru.nsu.carwash_server.payload.response.OrdersArrayResponse;
 import ru.nsu.carwash_server.payload.response.TimeAndPriceResponse;
@@ -75,6 +81,31 @@ public class OrderController {
         return ResponseEntity.ok(new GetBookedOrdersInTimeIntervalResponse(order));
     }
 
+    @PutMapping("/updateOrderInfo")
+    public ResponseEntity<?> updateOrderInfo(@Valid @RequestBody UpdateOrderInfoRequest updateOrderInfoRequest){
+        ordersRepository.updateOrderInfo(updateOrderInfoRequest.getUserId(), updateOrderInfoRequest.getPrice(),
+                updateOrderInfoRequest.getAutoNumber(), updateOrderInfoRequest.getSpecialist(),
+                updateOrderInfoRequest.getAdministrator(), updateOrderInfoRequest.getBoxNumber(),
+                updateOrderInfoRequest.getOrderId(), updateOrderInfoRequest.getBonuses(),
+                updateOrderInfoRequest.getComments(), updateOrderInfoRequest.isExecuted(),
+                updateOrderInfoRequest.getStartTime(), updateOrderInfoRequest.getEndTime(),
+                updateOrderInfoRequest.getOrderType());
+        return ResponseEntity.ok(new MessageResponse("Информация изменена"));
+    }
+
+    @GetMapping("/getActualOrders")
+    public ResponseEntity<?> getActualOrders(@RequestParam(name = "orderName", required = true) String orderName) {
+        System.out.println(orderName);
+        var includedOrders = ordersWashingRepository.findAllIncluded(orderName)
+                .orElse(null);
+        var connectedOrders = ordersWashingRepository.findAllConnected(orderName)
+                .orElse(null);
+        System.out.println(includedOrders);
+        System.out.println(connectedOrders);
+        //return ResponseEntity.ok(new MessageResponse("Hello world"));
+        return ResponseEntity.ok(new ConnectedOrdersResponse(includedOrders,connectedOrders));
+    }
+
     @PostMapping("/getBookedTimeInOneDay")
     public ResponseEntity<?> getBookedTimeInOneDay(@Valid @RequestBody GetBookedOrdersInTimeIntervalRequest
                                                            bookedOrdersInTimeIntervalRequest) {
@@ -90,7 +121,7 @@ public class OrderController {
                     for (var currentOrder : item.getOrdersPolishings()) {
                         stringOrders.add(currentOrder.getName().replace("_", " "));
                     }
-                    newItem = new SingleOrderResponse(item.getStartTime(), item.getEndTime(),
+                    newItem = new SingleOrderResponse(item.getId(),item.getStartTime(), item.getEndTime(),
                             item.getAdministrator(), item.getSpecialist(), item.getAutoNumber(), item.getAutoType(),
                             item.getBoxNumber(), item.getBonuses(), item.getPrice(), item.getWheelR(), item.isExecuted(),
                             item.getComments(), stringOrders, item.getUser().getPhone(), item.getOrderType());
@@ -102,7 +133,7 @@ public class OrderController {
                         stringOrders.add(currentOrder.getName().replace("_", " "));
                     }
 
-                    newItem = new SingleOrderResponse(item.getStartTime(), item.getEndTime(),
+                    newItem = new SingleOrderResponse(item.getId(),item.getStartTime(), item.getEndTime(),
                             item.getAdministrator(), item.getSpecialist(), item.getAutoNumber(), item.getAutoType(),
                             item.getBoxNumber(), item.getBonuses(), item.getPrice(), item.getWheelR(), item.isExecuted(),
                             item.getComments(), stringOrders, item.getUser().getPhone(), item.getOrderType());
@@ -113,7 +144,7 @@ public class OrderController {
                     for (var currentOrder : item.getOrdersTires()) {
                         stringOrders.add(currentOrder.getName().replace("_", " "));
                     }
-                    newItem = new SingleOrderResponse(item.getStartTime(), item.getEndTime(),
+                    newItem = new SingleOrderResponse(item.getId(),item.getStartTime(), item.getEndTime(),
                             item.getAdministrator(), item.getSpecialist(), item.getAutoNumber(), item.getAutoType(),
                             item.getBoxNumber(), item.getBonuses(), item.getPrice(), item.getWheelR(), item.isExecuted(),
                             item.getComments(), stringOrders, item.getUser().getPhone(), item.getOrderType());
@@ -428,111 +459,4 @@ public class OrderController {
         }
         return price;
     }
-//    @PostMapping("/getPriceAndTime")
-//    public ResponseEntity<?> getPriceAndTime(@Valid @RequestBody OrdersArrayRu ordersArrayRu) {
-//        ArrayList<String> ordersNameEng = new ArrayList<>();
-//        TimeAndPriceResponse response = new TimeAndPriceResponse();
-//        response.setPrice(0);
-//        response.setTime(0);
-//        if (ordersArrayRu.getOrdersRu() == null || ordersArrayRu.getOrdersRu().isEmpty()) {
-//            return ResponseEntity.ok(response);
-//
-//        }
-//        for (var item : ordersArrayRu.getOrdersRu()) {
-//            switch (item) {
-//                case "Турбо сушка кузова" -> ordersNameEng.add("TURBO_DRYING");
-//                case "Продувка кузова" -> ordersNameEng.add("BODY_BLOW");
-//                case "Продувка замков, зеркала" -> ordersNameEng.add("LOCKS_AND_MIRRORS_BLOW");
-//                case "Обработка силиконом" -> ordersNameEng.add("SILICONE_TREATMENT");
-//                case "Обработка замков жидкостью" -> ordersNameEng.add("LOCK_FLUID_TREATMENT");
-//                case "Обработка кожи кондиционером 1 эл." -> ordersNameEng.add("LEATHER_CONDITIONER_TREATMENT");
-//                case "Полироль пластика салона" -> ordersNameEng.add("SALON_PLASTIC_POLISH");
-//                case "Полироль пластика панель" -> ordersNameEng.add("PANEL_PLASTIC_POLISH");
-//                case "Полироль пластика багажник" -> ordersNameEng.add("TRUNK_PLASTIC_POLISH");
-//                case "Наружная мойка радиатора" -> ordersNameEng.add("RADIATOR_WASH");
-//                case "Чернение шин 4" -> ordersNameEng.add("TIRE_BLACKENING");
-//                case "Озонирование салона 30 мин." -> ordersNameEng.add("SALON_OZONATION");
-//                case "Очистка битумных пятен кузов" -> ordersNameEng.add("CLEANING_BITUMEN_STAINS_BODY");
-//                case "Покрытие лобового стекла Nano Glass 1 эл." -> ordersNameEng.add("WINDSHIELD_NANO_GLASS_COATING");
-//                case "Покрытие бокового стекла Nano Glass 1 эл." -> ordersNameEng.add("SIDE_GLASS_NANO_GLASS_COATING");
-//                case "Комплекс всех стёкол" -> ordersNameEng.add("COMPLEX_ALL_GLASSES");
-//                case "Диэлектрическая химчистка двигателя" -> ordersNameEng.add("ENGINE_CHEMICAL_CLEANING");
-//                case "Химчистка дисков 4 шт." -> ordersNameEng.add("DISC_CHEMICAL_CLEANING");
-//                case "Химчистка багажника" -> ordersNameEng.add("TRUNK_CHEMICAL_CLEANING");
-//                case "Химчистка двери 1 эл." -> ordersNameEng.add("OOR_CHEMICAL_CLEANING");
-//                case "Химчистка кресло (текстиль) 1 эл." -> ordersNameEng.add("TEXTILE_SEAT_CHEMICAL_CLEANING");
-//                case "Химчистка кресло (кожа) 1 эл." -> ordersNameEng.add("LEATHER_SEAT_CHEMICAL_CLEANING");
-//                case "Химчистка передней панели" -> ordersNameEng.add("FRONT_PANEL_CHEMICAL_CLEANING");
-//                case "Химчистка пола" -> ordersNameEng.add("FLOOR_CHEMICAL_CLEANING");
-//                case "Химчистка потолка" -> ordersNameEng.add("CEILING_CHEMICAL_CLEANING");
-//                case "Однофазная мойка с химией без протирки" ->
-//                        ordersNameEng.add("ONE_PHASE_WASH_WITH_CHEMICALS_NO_WIPING");
-//                case "Мойка кузова 2 фазы с протиркой" -> ordersNameEng.add("TWO_PHASE_WASH_WITH_WIPING");
-//                case "Мойка кузова 2 фазы без протирки" -> ordersNameEng.add("TWO_PHASE_WASH_NO_WIPING");
-//                case "Мойка комплекс (кузов 1 фазы + салон)" -> ordersNameEng.add("COMPLEX_WASH_1_PHASES_SALON");
-//                case "Мойка комплекс (кузов 2 фазы + салон)" -> ordersNameEng.add("COMPLEX_WASH_2_PHASES_SALON");
-//                case "Покрытие кварцевой защитой" -> ordersNameEng.add("QUARTZ_COATING");
-//                case "Мойка двигателя с хим. раствором + сушка" ->
-//                        ordersNameEng.add("ENGINE_WASH_WITH_CHEMICALS_AND_DRYING");
-//                case "Очистка арок колес" -> ordersNameEng.add("WHEEL_ARCHES_CLEANING");
-//                case "Уборка багажника" -> ordersNameEng.add("TRUNK_CLEANING");
-//                case "Влажная уборка салона" -> ordersNameEng.add("INNER_WET_CLEANING");
-//                case "Влажная уборка передней панели" -> ordersNameEng.add("FRONT_PANEL_WET_CLEANING");
-//                case "Пылесос салона" -> ordersNameEng.add("VACUUM_CLEANING_SALON");
-//                case "Пылесос пола" -> ordersNameEng.add("VACUUM_CLEANING_FLOOR");
-//                case "Пылесос ковриков" -> ordersNameEng.add("VACUUM_CLEANING_CARPETS");
-//                case "Коврик багажников" -> ordersNameEng.add("CARGO_MAT");
-//                case "Резиновый коврик 1 шт." -> ordersNameEng.add("RUBBER_MAT_1");
-//                case "Стирка текстильного коврика 1 шт." -> ordersNameEng.add("TEXTILE_MAT_WASH");
-//                case "Чистка стёкол с 2х сторон" -> ordersNameEng.add("GLASS_CLEANING_2_SIDES");
-//                case "Чистка стёкол внутри салона" -> ordersNameEng.add("INNER_GLASS_CLEANING");
-//                case "Чистка ветрового стекла" -> ordersNameEng.add("WINDSHIELD_CLEANING");
-//                case "Полировка восстановительная" -> ordersNameEng.add("POLISHING_RESTORATION");
-//                case "Глубокая абразивная полировка" -> ordersNameEng.add("DEEP_ABRASIVE_POLISHING");
-//                case "Полировка фар 1 шт" -> ordersNameEng.add("HEADLINE_POLISHING");
-//                case "Полимер Sonax до 6 месяцев" -> ordersNameEng.add("PROFESSIONAL_SONIX_POLYMER_COATING");
-//                case "Кварцекерамическое покрытие CAN COAT до 6 месяцев" ->
-//                        ordersNameEng.add("PROFESSIONAL_QUARTZ_CERAMIC_COATING");
-//                case "Koch Chemie 1K-NANO 1 год" -> ordersNameEng.add("PROFESSIONAL_KOCH_CHEMIE_1K_NANO");
-//                case "Профессиональное покрытие керамика (2 слоя + 1 слой) до 3 лет" ->
-//                        ordersNameEng.add("PROFESSIONAL_CERAMIC_COATING_2_LAYERS_ONE_LAYER");
-//                default -> throw new RuntimeException("No such Enum constant" + item);
-//            }
-//        }
-//        int price = 0;
-//        int time = 15;
-//        int carBodyType = ordersArrayRu.getBodyType();
-//        List<EOrderAdditional> orderEnums = new ArrayList<>();
-//
-//        for (int i = 0; i < ordersNameEng.size(); i++) {
-//            orderEnums.add(EOrderAdditional.valueOf(ordersNameEng.get(i)));
-//            price += orderEnums.get(i).getOrderInfo().getPriceForBodyType(carBodyType);
-//            time += orderEnums.get(i).getOrderInfo().getTimeForBodyType(carBodyType);
-//        }
-//        response.setPrice(price);
-//        response.setTime(time);
-//        return ResponseEntity.ok(response);
-//    }
-
-
-    /*@PostMapping("/newOrder")
-    public ResponseEntity<?> createOrder(@Valid @RequestBody NewOrderRequest newOrderRequest) {
-        Order newOrder = new Order(newOrderRequest.getName(), newOrderRequest.getPrice(), newOrderRequest.getDate());
-        ordersRepository.save(newOrder);
-        return ResponseEntity.ok(new MessageResponse("Добавлен новый заказ с id: " + newOrder.getId()));
-    }
-
-    @PostMapping("/updateOrderInfo")
-    public ResponseEntity<?> updateOrderInfo(@Valid @RequestBody UpdateOrderInfoRequest UpdateOrderInfoRequest) {
-        UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        Long userId = userDetails.getId();
-        ordersRepository.updateOrderInfo(true, userId,
-                UpdateOrderInfoRequest.getPrice(), UpdateOrderInfoRequest.getAutoId(),
-                UpdateOrderInfoRequest.getSpecialist(), UpdateOrderInfoRequest.getAdministrator(),
-                UpdateOrderInfoRequest.getBoxNumber(), UpdateOrderInfoRequest.getOrderId(),
-                UpdateOrderInfoRequest.getBonuses(), UpdateOrderInfoRequest.getComments(),
-                UpdateOrderInfoRequest.isExecuted(), UpdateOrderInfoRequest.getStartTime(),
-                UpdateOrderInfoRequest.getEndTime());
-        return ResponseEntity.ok(UpdateOrderInfoRequest);
-    }*/
 }

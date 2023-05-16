@@ -56,6 +56,11 @@ public class RefreshTokenService {
 
   @Transactional
   public int deleteByUserId(Long userId) {
-    return refreshTokenRepository.deleteByUser(userRepository.findById(userId).get());
+    var user = userRepository.findById(userId)
+            .orElseThrow(() -> new RuntimeException("Error: Пользователя с таким телефоном не существует"));
+    if (refreshTokenRepository.findByUser(user).isPresent()){
+      return refreshTokenRepository.deleteByUser(user);
+    }
+    return 0;
   }
 }

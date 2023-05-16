@@ -10,6 +10,8 @@ import java.util.List;
 @Data
 public class SingleOrderResponse {
 
+    private Long id;
+
     private Date startTime;
 
     private Date endTime;
