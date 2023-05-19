@@ -17,13 +17,11 @@ public class UpdateOrderInfoRequest {
     @NotNull
     private Long orderId;
 
-    private Long userId;
+    private String userPhone;
 
     private String orderType;
 
     private Integer price = null;
-
-    private String name = null;
 
     private Date startTime = null;
 

@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import javax.persistence.CascadeType;
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
@@ -33,8 +34,10 @@ public class Order {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(name = "start_time")
     private Date startTime;
 
+    @Column(name = "end_time")
     private Date endTime;
 
     private String administrator;
@@ -81,11 +84,12 @@ public class Order {
 
     private String orderType;
 
-    public Order(List<OrdersWashing> washingOrders, Date startTime, String administrator, String specialist,
+    public Order(List<OrdersWashing> washingOrders, Date startTime,Date endTime, String administrator, String specialist,
                  int boxNumber, int bonuses, boolean executed, String comments,
                  String autoNumber, int autoType, User user, String orderType) {
         this.ordersWashing = washingOrders;
         this.startTime = startTime;
+        this.endTime = endTime;
         this.administrator = administrator;
         this.specialist = specialist;
         this.boxNumber = boxNumber;
@@ -100,11 +104,12 @@ public class Order {
         //setEndTimeForCarType(autoType);
     }
 
-    public Order(List<OrdersPolishing> ordersPolishings, Date startTime, String administrator, String specialist,
+    public Order(List<OrdersPolishing> ordersPolishings, Date startTime, Date endTime, String administrator, String specialist,
                  int boxNumber, int bonuses, boolean executed, String comments,
                  String autoNumber, int autoType, User user, String orderType, int price) {
         this.ordersPolishings = ordersPolishings;
         this.startTime = startTime;
+        this.endTime = endTime;
         this.administrator = administrator;
         this.specialist = specialist;
         this.boxNumber = boxNumber;
@@ -120,11 +125,12 @@ public class Order {
         //setEndTimeForCarType(autoType);
     }
 
-    public Order(List<OrdersTire> ordersTires, Date startTime, String administrator,
+    public Order(List<OrdersTire> ordersTires, Date startTime, Date endTime, String administrator,
                  String specialist, int boxNumber, int bonuses, boolean executed, String comments,
                  String autoNumber, int autoType, User user, String orderType, int price, String wheelR) {
         this.ordersTires = ordersTires;
         this.startTime = startTime;
+        this.endTime = endTime;
         this.administrator = administrator;
         this.specialist = specialist;
         this.boxNumber = boxNumber;

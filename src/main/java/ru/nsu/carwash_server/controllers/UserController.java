@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import ru.nsu.carwash_server.models.User;
+import ru.nsu.carwash_server.models.exception.NotInDataBaseException;
 import ru.nsu.carwash_server.models.helpers.OrdersPriceAndTimeInfo;
 import ru.nsu.carwash_server.payload.request.UpdateUserInfoRequest;
 import ru.nsu.carwash_server.payload.response.MessageResponse;
@@ -43,7 +44,7 @@ public class UserController {
         UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         Long userId = userDetails.getId();
         var user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("Error: Пользователя с таким телефоном не существует"));
+                .orElseThrow(() -> new NotInDataBaseException("пользователей не найден пользователь с айди: ", userId.toString()));
         userRepository.changeUserInfo(updateUserInfoRequest.getEmail(), updateUserInfoRequest.getUsername(),
                 userId, updateUserInfoRequest.getFullName());
         refreshTokenService.deleteByUserId(userId);
@@ -57,7 +58,7 @@ public class UserController {
         UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         Long userId = userDetails.getId();
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("Error: Пользователя с таким телефоном не существует"));
+                .orElseThrow(() -> new NotInDataBaseException("пользователей не найден пользователь с айди: ", userId.toString()));
         List<OrdersPriceAndTimeInfo> ordersPriceAndTimeInfo = new ArrayList<>();
         for (var item: user.getOrders()){
             ordersPriceAndTimeInfo.add(new OrdersPriceAndTimeInfo(item.getOrderType(), item.getPrice(),item.getStartTime()));

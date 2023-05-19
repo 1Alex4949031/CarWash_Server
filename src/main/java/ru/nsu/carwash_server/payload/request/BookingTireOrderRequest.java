@@ -22,6 +22,8 @@ public class BookingTireOrderRequest {
     @NotNull
     private Date startTime;
 
+    private Date endTime;
+
     private String administrator;
 
     private String specialist;

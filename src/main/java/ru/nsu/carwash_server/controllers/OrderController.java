@@ -4,6 +4,7 @@ package ru.nsu.carwash_server.controllers;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -17,6 +18,7 @@ import ru.nsu.carwash_server.models.OrdersPolishing;
 import ru.nsu.carwash_server.models.OrdersTire;
 import ru.nsu.carwash_server.models.OrdersWashing;
 import ru.nsu.carwash_server.models.User;
+import ru.nsu.carwash_server.models.exception.NotInDataBaseException;
 import ru.nsu.carwash_server.models.helpers.SingleOrderResponse;
 import ru.nsu.carwash_server.payload.request.BookingTireOrderRequest;
 import ru.nsu.carwash_server.payload.request.BookingWashingOrderRequest;
@@ -24,7 +26,6 @@ import ru.nsu.carwash_server.payload.request.GetBookedOrdersInTimeIntervalReques
 import ru.nsu.carwash_server.payload.request.OrdersArrayPriceTimeRequest;
 import ru.nsu.carwash_server.payload.request.UpdateOrderInfoRequest;
 import ru.nsu.carwash_server.payload.response.ConnectedOrdersResponse;
-import ru.nsu.carwash_server.payload.response.GetBookedOrdersInTimeIntervalResponse;
 import ru.nsu.carwash_server.payload.response.MessageResponse;
 import ru.nsu.carwash_server.payload.response.OrderInfoResponse;
 import ru.nsu.carwash_server.payload.response.OrdersArrayResponse;
@@ -33,6 +34,7 @@ import ru.nsu.carwash_server.repository.OrdersPolishingRepository;
 import ru.nsu.carwash_server.repository.OrdersRepository;
 import ru.nsu.carwash_server.repository.OrdersTireRepository;
 import ru.nsu.carwash_server.repository.OrdersWashingRepository;
+import ru.nsu.carwash_server.repository.UserRepository;
 import ru.nsu.carwash_server.security.services.UserDetailsImpl;
 
 import javax.validation.Valid;
@@ -41,6 +43,7 @@ import java.util.List;
 
 @CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
+@ControllerAdvice
 @RequestMapping("/api/orders")
 public class OrderController {
 
@@ -51,39 +54,28 @@ public class OrderController {
     private final OrdersPolishingRepository ordersPolishingRepository;
 
     private final OrdersTireRepository ordersTireRepository;
+    private final UserRepository userRepository;
 
     @Autowired
     public OrderController(
             OrdersRepository ordersRepository,
             OrdersWashingRepository ordersWashingRepository,
             OrdersTireRepository ordersTireRepository,
-            OrdersPolishingRepository ordersPolishingRepository) {
+            OrdersPolishingRepository ordersPolishingRepository,
+            UserRepository userRepository) {
         this.ordersRepository = ordersRepository;
         this.ordersWashingRepository = ordersWashingRepository;
         this.ordersPolishingRepository = ordersPolishingRepository;
         this.ordersTireRepository = ordersTireRepository;
-    }
-
-    @PostMapping("/getBookedTimeInTimeInterval")
-    public ResponseEntity<?> getBookedTimeInTimeInterval(@Valid @RequestBody GetBookedOrdersInTimeIntervalRequest bookedOrdersInTimeIntervalRequest) {
-        List<Order> order = ordersRepository
-                .getBookedOrdersInTimeInterval(bookedOrdersInTimeIntervalRequest.getStartTime(),
-                        bookedOrdersInTimeIntervalRequest.getEndTime());
-        return ResponseEntity.ok(new GetBookedOrdersInTimeIntervalResponse(order));
-    }
-
-    @PostMapping("/getBookedTimeInOneDay2")
-    public ResponseEntity<?> getBookedTimeInOneDay2(@Valid @RequestBody GetBookedOrdersInTimeIntervalRequest
-                                                            bookedOrdersInTimeIntervalRequest) {
-        List<Order> order = ordersRepository
-                .getBookedOrdersInOneDay(bookedOrdersInTimeIntervalRequest.getStartTime(),
-                        bookedOrdersInTimeIntervalRequest.getEndTime());
-        return ResponseEntity.ok(new GetBookedOrdersInTimeIntervalResponse(order));
+        this.userRepository = userRepository;
     }
 
     @PutMapping("/updateOrderInfo")
-    public ResponseEntity<?> updateOrderInfo(@Valid @RequestBody UpdateOrderInfoRequest updateOrderInfoRequest){
-        ordersRepository.updateOrderInfo(updateOrderInfoRequest.getUserId(), updateOrderInfoRequest.getPrice(),
+    public ResponseEntity<?> updateOrderInfo(@Valid @RequestBody UpdateOrderInfoRequest updateOrderInfoRequest) {
+        var user = userRepository.findByUsername(updateOrderInfoRequest.getUserPhone())
+                                .orElseThrow(() -> new NotInDataBaseException("пользователей не найден пользователь с айди: ", updateOrderInfoRequest.getUserPhone().toString()));
+
+        ordersRepository.updateOrderInfo(user.getId(), updateOrderInfoRequest.getPrice(),
                 updateOrderInfoRequest.getAutoNumber(), updateOrderInfoRequest.getSpecialist(),
                 updateOrderInfoRequest.getAdministrator(), updateOrderInfoRequest.getBoxNumber(),
                 updateOrderInfoRequest.getOrderId(), updateOrderInfoRequest.getBonuses(),
@@ -95,22 +87,18 @@ public class OrderController {
 
     @GetMapping("/getActualOrders")
     public ResponseEntity<?> getActualOrders(@RequestParam(name = "orderName", required = true) String orderName) {
-        System.out.println(orderName);
         var includedOrders = ordersWashingRepository.findAllIncluded(orderName)
                 .orElse(null);
         var connectedOrders = ordersWashingRepository.findAllConnected(orderName)
                 .orElse(null);
-        System.out.println(includedOrders);
-        System.out.println(connectedOrders);
-        //return ResponseEntity.ok(new MessageResponse("Hello world"));
-        return ResponseEntity.ok(new ConnectedOrdersResponse(includedOrders,connectedOrders));
+        return ResponseEntity.ok(new ConnectedOrdersResponse(includedOrders, connectedOrders));
     }
 
     @PostMapping("/getBookedTimeInOneDay")
     public ResponseEntity<?> getBookedTimeInOneDay(@Valid @RequestBody GetBookedOrdersInTimeIntervalRequest
                                                            bookedOrdersInTimeIntervalRequest) {
         List<Order> orders = ordersRepository
-                .getBookedOrdersInOneDay(bookedOrdersInTimeIntervalRequest.getStartTime(),
+                .getBookedOrdersInOneDayFull(bookedOrdersInTimeIntervalRequest.getStartTime(),
                         bookedOrdersInTimeIntervalRequest.getEndTime());
         List<SingleOrderResponse> ordersForResponse = new ArrayList<>();
         for (var item : orders) {
@@ -121,7 +109,7 @@ public class OrderController {
                     for (var currentOrder : item.getOrdersPolishings()) {
                         stringOrders.add(currentOrder.getName().replace("_", " "));
                     }
-                    newItem = new SingleOrderResponse(item.getId(),item.getStartTime(), item.getEndTime(),
+                    newItem = new SingleOrderResponse(item.getId(), item.getStartTime(), item.getEndTime(),
                             item.getAdministrator(), item.getSpecialist(), item.getAutoNumber(), item.getAutoType(),
                             item.getBoxNumber(), item.getBonuses(), item.getPrice(), item.getWheelR(), item.isExecuted(),
                             item.getComments(), stringOrders, item.getUser().getPhone(), item.getOrderType());
@@ -133,7 +121,7 @@ public class OrderController {
                         stringOrders.add(currentOrder.getName().replace("_", " "));
                     }
 
-                    newItem = new SingleOrderResponse(item.getId(),item.getStartTime(), item.getEndTime(),
+                    newItem = new SingleOrderResponse(item.getId(), item.getStartTime(), item.getEndTime(),
                             item.getAdministrator(), item.getSpecialist(), item.getAutoNumber(), item.getAutoType(),
                             item.getBoxNumber(), item.getBonuses(), item.getPrice(), item.getWheelR(), item.isExecuted(),
                             item.getComments(), stringOrders, item.getUser().getPhone(), item.getOrderType());
@@ -144,7 +132,7 @@ public class OrderController {
                     for (var currentOrder : item.getOrdersTires()) {
                         stringOrders.add(currentOrder.getName().replace("_", " "));
                     }
-                    newItem = new SingleOrderResponse(item.getId(),item.getStartTime(), item.getEndTime(),
+                    newItem = new SingleOrderResponse(item.getId(), item.getStartTime(), item.getEndTime(),
                             item.getAdministrator(), item.getSpecialist(), item.getAutoNumber(), item.getAutoType(),
                             item.getBoxNumber(), item.getBonuses(), item.getPrice(), item.getWheelR(), item.isExecuted(),
                             item.getComments(), stringOrders, item.getUser().getPhone(), item.getOrderType());
@@ -165,7 +153,7 @@ public class OrderController {
 
         for (var order : bookingOrderRequest.getOrders()) {
             var currentOrder = ordersWashingRepository.findByName(order.replace(" ", "_"))
-                    .orElseThrow(() -> new RuntimeException("Error: Не существующая услуга - " + order));
+                    .orElseThrow(() -> new NotInDataBaseException("услуг мойки не найдена услуга: ", order));
             ordersWashings.add(currentOrder);
         }
 
@@ -176,7 +164,7 @@ public class OrderController {
             //логика подсчёта цены
         }
 
-        Order newOrder = new Order(ordersWashings, bookingOrderRequest.getStartTime(),
+        Order newOrder = new Order(ordersWashings, bookingOrderRequest.getStartTime(), bookingOrderRequest.getEndTime(),
                 bookingOrderRequest.getAdministrator(), bookingOrderRequest.getSpecialist(),
                 bookingOrderRequest.getBoxNumber(), bookingOrderRequest.getBonuses(),
                 false, bookingOrderRequest.getComments(),
@@ -201,7 +189,7 @@ public class OrderController {
 
         for (var order : bookingOrderRequest.getOrders()) {
             var currentOrder = ordersPolishingRepository.findByName(order.replace(" ", "_"))
-                    .orElseThrow(() -> new RuntimeException("Error: Не существующая услуга - " + order));
+                    .orElseThrow(() -> new NotInDataBaseException("услуг полировки не найдена услуга: ", order));
             ordersPolishings.add(currentOrder);
         }
 
@@ -212,7 +200,7 @@ public class OrderController {
             //логика подсчёта цены
         }
 
-        Order newOrder = new Order(ordersPolishings, bookingOrderRequest.getStartTime(),
+        Order newOrder = new Order(ordersPolishings, bookingOrderRequest.getStartTime(), bookingOrderRequest.getEndTime(),
                 bookingOrderRequest.getAdministrator(), bookingOrderRequest.getSpecialist(),
                 bookingOrderRequest.getBoxNumber(), bookingOrderRequest.getBonuses(),
                 false, bookingOrderRequest.getComments(),
@@ -236,7 +224,7 @@ public class OrderController {
 
         for (var order : bookingOrderRequest.getOrders()) {
             var currentOrder = ordersTireRepository.findByName(order.replace(" ", "_"))
-                    .orElseThrow(() -> new RuntimeException("Error: Не существующая услуга - " + order));
+                    .orElseThrow(() -> new NotInDataBaseException("услуг шиномонтажа не найдена услуга: ", order));
             ordersTireService.add(currentOrder);
         }
 
@@ -247,7 +235,7 @@ public class OrderController {
             //логика подсчёта цены
         }
 
-        Order newOrder = new Order(ordersTireService, bookingOrderRequest.getStartTime(),
+        Order newOrder = new Order(ordersTireService, bookingOrderRequest.getStartTime(), bookingOrderRequest.getEndTime(),
                 bookingOrderRequest.getAdministrator(), bookingOrderRequest.getSpecialist(),
                 bookingOrderRequest.getBoxNumber(), bookingOrderRequest.getBonuses(),
                 false, bookingOrderRequest.getComments(),
@@ -287,20 +275,20 @@ public class OrderController {
         if (bodyType == 1) {
             for (var item : orderArray) {
                 var currentOrder = ordersWashingRepository.findByName(item.replace(" ", "_"))
-                        .orElseThrow(() -> new RuntimeException("Error: Не существующая услуга - " + item));
+                        .orElseThrow(() -> new NotInDataBaseException("услуг мойки не найдена услуга: ", item));
                 price += currentOrder.getPriceFirstType();
             }
         } else if (bodyType == 2) {
             for (var item : orderArray) {
                 var currentOrder = ordersWashingRepository.findByName(item.replace(" ", "_"))
-                        .orElseThrow(() -> new RuntimeException("Error: Не существующая услуга - " + item));
+                        .orElseThrow(() -> new NotInDataBaseException("услуг мойки не найдена услуга: ", item));
                 price += currentOrder.getPriceSecondType();
             }
 
         } else if (bodyType == 3) {
             for (var item : orderArray) {
                 var currentOrder = ordersWashingRepository.findByName(item.replace(" ", "_"))
-                        .orElseThrow(() -> new RuntimeException("Error: Не существующая услуга - " + item));
+                        .orElseThrow(() -> new NotInDataBaseException("услуг мойки не найдена услуга: ", item));
                 price += currentOrder.getPriceThirdType();
             }
         }
@@ -312,20 +300,20 @@ public class OrderController {
         if (bodyType == 1) {
             for (var item : orderArray) {
                 var currentOrder = ordersWashingRepository.findByName(item.replace(" ", "_"))
-                        .orElseThrow(() -> new RuntimeException("Error: Не существующая услуга - " + item));
+                        .orElseThrow(() -> new NotInDataBaseException("услуг мойки не найдена услуга: ", item));
                 time += currentOrder.getTimeFirstType();
             }
         } else if (bodyType == 2) {
             for (var item : orderArray) {
                 var currentOrder = ordersWashingRepository.findByName(item.replace(" ", "_"))
-                        .orElseThrow(() -> new RuntimeException("Error: Не существующая услуга - " + item));
+                        .orElseThrow(() -> new NotInDataBaseException("услуг мойки не найдена услуга: ", item));
                 time += currentOrder.getTimeSecondType();
             }
 
         } else if (bodyType == 3) {
             for (var item : orderArray) {
                 var currentOrder = ordersWashingRepository.findByName(item.replace(" ", "_"))
-                        .orElseThrow(() -> new RuntimeException("Error: Не существующая услуга - " + item));
+                        .orElseThrow(() -> new NotInDataBaseException("услуг мойки не найдена услуга: ", item));
                 time += currentOrder.getTimeThirdType();
             }
         }
@@ -337,20 +325,20 @@ public class OrderController {
         if (bodyType == 1) {
             for (var item : orderArray) {
                 var currentOrder = ordersPolishingRepository.findByName(item.replace(" ", "_"))
-                        .orElseThrow(() -> new RuntimeException("Error: Не существующая услуга - " + item));
+                        .orElseThrow(() -> new NotInDataBaseException("услуг полировки не найдена услуга: ", item));
                 price += currentOrder.getPriceFirstType();
             }
         } else if (bodyType == 2) {
             for (var item : orderArray) {
                 var currentOrder = ordersPolishingRepository.findByName(item.replace(" ", "_"))
-                        .orElseThrow(() -> new RuntimeException("Error: Не существующая услуга - " + item));
+                        .orElseThrow(() -> new NotInDataBaseException("услуг полировки не найдена услуга: ", item));
                 price += currentOrder.getPriceSecondType();
             }
 
         } else if (bodyType == 3) {
             for (var item : orderArray) {
                 var currentOrder = ordersPolishingRepository.findByName(item.replace(" ", "_"))
-                        .orElseThrow(() -> new RuntimeException("Error: Не существующая услуга - " + item));
+                        .orElseThrow(() -> new NotInDataBaseException("услуг полировки не найдена услуга: ", item));
                 price += currentOrder.getPriceThirdType();
             }
         }
@@ -362,20 +350,20 @@ public class OrderController {
         if (bodyType == 1) {
             for (var item : orderArray) {
                 var currentOrder = ordersPolishingRepository.findByName(item.replace(" ", "_"))
-                        .orElseThrow(() -> new RuntimeException("Error: Не существующая услуга - " + item));
+                        .orElseThrow(() -> new NotInDataBaseException("услуг полировки не найдена услуга: ", item));
                 time += currentOrder.getTimeFirstType();
             }
         } else if (bodyType == 2) {
             for (var item : orderArray) {
                 var currentOrder = ordersPolishingRepository.findByName(item.replace(" ", "_"))
-                        .orElseThrow(() -> new RuntimeException("Error: Не существующая услуга - " + item));
+                        .orElseThrow(() -> new NotInDataBaseException("услуг полировки не найдена услуга: ", item));
                 time += currentOrder.getTimeSecondType();
             }
 
         } else if (bodyType == 3) {
             for (var item : orderArray) {
                 var currentOrder = ordersPolishingRepository.findByName(item.replace(" ", "_"))
-                        .orElseThrow(() -> new RuntimeException("Error: Не существующая услуга - " + item));
+                        .orElseThrow(() -> new NotInDataBaseException("услуг полировки не найдена услуга: ", item));
                 time += currentOrder.getTimeThirdType();
             }
         }
@@ -389,70 +377,70 @@ public class OrderController {
             case "R13":
                 for (var item : orderArray) {
                     var currentOrder = ordersTireRepository.findByName(item.replace(" ", "_"))
-                            .orElseThrow(() -> new RuntimeException("Error: Не существующая услуга - " + item));
+                            .orElseThrow(() -> new NotInDataBaseException("услуг шиномонтажа не найдена услуга: ", item));
                     price += currentOrder.getPrice_r_13();
                 }
                 break;
             case "R14":
                 for (var item : orderArray) {
                     var currentOrder = ordersTireRepository.findByName(item.replace(" ", "_"))
-                            .orElseThrow(() -> new RuntimeException("Error: Не существующая услуга - " + item));
+                            .orElseThrow(() -> new NotInDataBaseException("услуг шиномонтажа не найдена услуга: ", item));
                     price += currentOrder.getPrice_r_14();
                 }
                 break;
             case "R15":
                 for (var item : orderArray) {
                     var currentOrder = ordersTireRepository.findByName(item.replace(" ", "_"))
-                            .orElseThrow(() -> new RuntimeException("Error: Не существующая услуга - " + item));
+                            .orElseThrow(() -> new NotInDataBaseException("услуг шиномонтажа не найдена услуга: ", item));
                     price += currentOrder.getPrice_r_15();
                 }
                 break;
             case "R16":
                 for (var item : orderArray) {
                     var currentOrder = ordersTireRepository.findByName(item.replace(" ", "_"))
-                            .orElseThrow(() -> new RuntimeException("Error: Не существующая услуга - " + item));
+                            .orElseThrow(() -> new NotInDataBaseException("услуг шиномонтажа не найдена услуга: ", item));
                     price += currentOrder.getPrice_r_16();
                 }
                 break;
             case "R17":
                 for (var item : orderArray) {
                     var currentOrder = ordersTireRepository.findByName(item.replace(" ", "_"))
-                            .orElseThrow(() -> new RuntimeException("Error: Не существующая услуга - " + item));
+                            .orElseThrow(() -> new NotInDataBaseException("услуг шиномонтажа не найдена услуга: ", item));
                     price += currentOrder.getPrice_r_17();
                 }
                 break;
             case "R18":
                 for (var item : orderArray) {
                     var currentOrder = ordersTireRepository.findByName(item.replace(" ", "_"))
-                            .orElseThrow(() -> new RuntimeException("Error: Не существующая услуга - " + item));
+                            .orElseThrow(() -> new NotInDataBaseException("услуг шиномонтажа не найдена услуга: ", item));
                     price += currentOrder.getPrice_r_18();
                 }
                 break;
             case "R19":
                 for (var item : orderArray) {
                     var currentOrder = ordersTireRepository.findByName(item.replace(" ", "_"))
-                            .orElseThrow(() -> new RuntimeException("Error: Не существующая услуга - " + item));
+                            .orElseThrow(() -> new NotInDataBaseException("услуг шиномонтажа не найдена услуга: ", item));
                     price += currentOrder.getPrice_r_19();
                 }
                 break;
             case "R20":
                 for (var item : orderArray) {
                     var currentOrder = ordersTireRepository.findByName(item.replace(" ", "_"))
-                            .orElseThrow(() -> new RuntimeException("Error: Не существующая услуга - " + item));
+                            .orElseThrow(() -> new NotInDataBaseException("услуг шиномонтажа не найдена услуга: ", item));
                     price += currentOrder.getPrice_r_20();
                 }
                 break;
             case "R21":
                 for (var item : orderArray) {
                     var currentOrder = ordersTireRepository.findByName(item.replace(" ", "_"))
-                            .orElseThrow(() -> new RuntimeException("Error: Не существующая услуга - " + item));
+                            .orElseThrow(() -> new NotInDataBaseException("услуг шиномонтажа не найдена услуга: ", item));
                     price += currentOrder.getPrice_r_21();
                 }
                 break;
             case "R22":
                 for (var item : orderArray) {
                     var currentOrder = ordersTireRepository.findByName(item.replace(" ", "_"))
-                            .orElseThrow(() -> new RuntimeException("Error: Не существующая услуга - " + item));
+                            .orElseThrow(() -> new NotInDataBaseException("услуг шиномонтажа не найдена услуга: ", item));
                     price += currentOrder.getPrice_r_22();
                 }
                 break;

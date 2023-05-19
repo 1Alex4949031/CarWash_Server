@@ -35,9 +35,9 @@ public interface OrdersRepository extends JpaRepository<Order, Long> {
     @Query(value = "SELECT * FROM orders WHERE start_time " +
             "BETWEEN :StartTime AND :EndTime " +
             " AND end_time BETWEEN :StartTime AND :EndTime", nativeQuery = true)
-    List<Order> getBookedOrdersInTimeInterval(@Param("StartTime") Date startTime, @Param("EndTime") Date endTime);
+    List<Order> getBookedOrdersInTimeIntervalFull(@Param("StartTime") Date startTime, @Param("EndTime") Date endTime);
 
     @Query(value = "SELECT * FROM orders WHERE start_time " +
             "BETWEEN :StartTime AND :EndTime", nativeQuery = true)
-    List<Order> getBookedOrdersInOneDay(@Param("StartTime") Date startTime, @Param("EndTime") Date endTime);
+    List<Order> getBookedOrdersInOneDayFull(@Param("StartTime") Date startTime, @Param("EndTime") Date endTime);
 }

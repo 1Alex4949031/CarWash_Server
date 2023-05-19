@@ -1,10 +1,10 @@
 package ru.nsu.carwash_server.payload.request;
 
-import lombok.Getter;
+import lombok.Data;
 
 import java.util.ArrayList;
 
-@Getter
+@Data
 public class OrdersArrayPriceTimeRequest {
     String orderType;
     ArrayList<String> orders;

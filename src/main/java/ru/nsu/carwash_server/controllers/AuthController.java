@@ -18,6 +18,7 @@ import ru.nsu.carwash_server.models.RefreshToken;
 import ru.nsu.carwash_server.models.Role;
 import ru.nsu.carwash_server.models.User;
 import ru.nsu.carwash_server.models.constants.ERole;
+import ru.nsu.carwash_server.models.exception.NotInDataBaseException;
 import ru.nsu.carwash_server.models.exception.TokenRefreshException;
 import ru.nsu.carwash_server.payload.request.LoginRequest;
 import ru.nsu.carwash_server.payload.request.SignupRequest;
@@ -116,7 +117,7 @@ public class AuthController {
         Set<String> strRoles = signUpRequest.getRole();
         if (strRoles == null || strRoles.isEmpty()) {
             Role userRole = roleRepository.findByName(ERole.ROLE_USER)
-                    .orElseThrow(() -> new RuntimeException("Error: Role is not found."));
+                    .orElseThrow(() -> new NotInDataBaseException("ролей не найдена роль: ", ERole.ROLE_USER.name()));
             roles.add(userRole);
         } else {
             Set<ERole> rolesList = EnumSet.allOf(ERole.class);
@@ -126,7 +127,7 @@ public class AuthController {
                         .findAny();
                 if (enumRole.isPresent()) {
                     return roleRepository.findByName(enumRole.get())
-                            .orElseThrow(() -> new RuntimeException("Error: Role is not found."));
+                            .orElseThrow(() -> new NotInDataBaseException("ролей не найдена роль: ", enumRole.get().name()));
                 } else {
                     throw new RuntimeException("Error: Invalid role.");
                 }
@@ -134,7 +135,7 @@ public class AuthController {
 
             // Добавление роли пользователя, если ее нет в списке ролей
             Role userRole = roleRepository.findByName(ERole.ROLE_USER)
-                    .orElseThrow(() -> new RuntimeException("Error: Role is not found."));
+                    .orElseThrow(() -> new NotInDataBaseException("ролей не найдена роль: ", ERole.ROLE_USER.name()));
             roles.add(userRole);
         }
 
@@ -182,7 +183,7 @@ public class AuthController {
 
         List<String> roles = userDetails.getAuthorities().stream().map(GrantedAuthority::getAuthority)
                 .collect(Collectors.toList());
-        if (!roles.contains("ROLE_ADMIN") || !roles.contains("ROLE_MODERATOR") || !roles.contains("ROLE_ADMINISTRATOR")){
+        if (!roles.contains("ROLE_ADMIN") || !roles.contains("ROLE_MODERATOR") || !roles.contains("ROLE_ADMINISTRATOR")) {
             return ResponseEntity.badRequest().body(new MessageResponse("Error: Не достаточно прав!"));
         }
 

@@ -1,11 +1,12 @@
 package ru.nsu.carwash_server.advice;
 
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Data;
+import lombok.ToString;
 
 import java.util.Date;
 
-@Getter @Setter
+@Data
+@ToString
 public class ErrorMessage {
   private int statusCode;
   private Date timestamp;
