@@ -1,5 +1,6 @@
 package ru.nsu.carwash_server.models;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -35,9 +36,11 @@ public class Order {
     private Long id;
 
     @Column(name = "start_time")
+    @JsonFormat(timezone="Asia/Novosibirsk")
     private Date startTime;
 
     @Column(name = "end_time")
+    @JsonFormat(timezone="Asia/Novosibirsk")
     private Date endTime;
 
     private String administrator;
@@ -82,6 +85,8 @@ public class Order {
     @JsonIgnore
     private User user;
 
+    private String userContacts;
+
     private String orderType;
 
     public Order(List<OrdersWashing> washingOrders, Date startTime,Date endTime, String administrator, String specialist,
@@ -101,7 +106,6 @@ public class Order {
         this.user = user;
         this.orderType = orderType;
         this.wheelR = "wash Order";
-        //setEndTimeForCarType(autoType);
     }
 
     public Order(List<OrdersPolishing> ordersPolishings, Date startTime, Date endTime, String administrator, String specialist,
@@ -122,7 +126,6 @@ public class Order {
         this.orderType = orderType;
         this.wheelR = "polishing Order";
         this.price = price;
-        //setEndTimeForCarType(autoType);
     }
 
     public Order(List<OrdersTire> ordersTires, Date startTime, Date endTime, String administrator,
@@ -143,8 +146,67 @@ public class Order {
         this.orderType = orderType;
         this.price = price;
         this.wheelR = wheelR;
-        //setEndTimeForCarType(autoType);
     }
+
+    public Order(List<OrdersWashing> washingOrders, Date startTime,Date endTime, String administrator, String specialist,
+                 int boxNumber, int bonuses, boolean executed, String comments,
+                 String autoNumber, int autoType, String userContacts, String orderType) {
+        this.ordersWashing = washingOrders;
+        this.startTime = startTime;
+        this.endTime = endTime;
+        this.administrator = administrator;
+        this.specialist = specialist;
+        this.boxNumber = boxNumber;
+        this.bonuses = bonuses;
+        this.executed = executed;
+        this.comments = comments;
+        this.autoNumber = autoNumber;
+        this.autoType = autoType;
+        this.userContacts = userContacts;
+        this.orderType = orderType;
+        this.wheelR = "wash Order";
+    }
+
+    public Order(List<OrdersPolishing> ordersPolishings, Date startTime, Date endTime, String administrator, String specialist,
+                 int boxNumber, int bonuses, boolean executed, String comments,
+                 String autoNumber, int autoType, String userContacts, String orderType, int price) {
+        this.ordersPolishings = ordersPolishings;
+        this.startTime = startTime;
+        this.endTime = endTime;
+        this.administrator = administrator;
+        this.specialist = specialist;
+        this.boxNumber = boxNumber;
+        this.bonuses = bonuses;
+        this.executed = executed;
+        this.comments = comments;
+        this.autoNumber = autoNumber;
+        this.autoType = autoType;
+        this.userContacts = userContacts;
+        this.orderType = orderType;
+        this.wheelR = "polishing Order";
+        this.price = price;
+    }
+
+    public Order(List<OrdersTire> ordersTires, Date startTime, Date endTime, String administrator,
+                 String specialist, int boxNumber, int bonuses, boolean executed, String comments,
+                 String autoNumber, int autoType, String userContacts, String orderType, int price, String wheelR) {
+        this.ordersTires = ordersTires;
+        this.startTime = startTime;
+        this.endTime = endTime;
+        this.administrator = administrator;
+        this.specialist = specialist;
+        this.boxNumber = boxNumber;
+        this.bonuses = bonuses;
+        this.executed = executed;
+        this.comments = comments;
+        this.autoNumber = autoNumber;
+        this.autoType = autoType;
+        this.userContacts = userContacts;
+        this.orderType = orderType;
+        this.price = price;
+        this.wheelR = wheelR;
+    }
+
 
     //private void setEndTimeForCarType(int carType){
     //    int price = 0;

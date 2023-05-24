@@ -1,5 +1,6 @@
 package ru.nsu.carwash_server.models.helpers;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
@@ -12,8 +13,10 @@ public class SingleOrderResponse {
 
     private Long id;
 
+    @JsonFormat(timezone="Asia/Novosibirsk")
     private Date startTime;
 
+    @JsonFormat(timezone="Asia/Novosibirsk")
     private Date endTime;
 
     private String administrator;
@@ -22,13 +25,13 @@ public class SingleOrderResponse {
 
     private String autoNumber;
 
-    private int autoType;
+    private Integer autoType;
 
-    private int boxNumber;
+    private Integer boxNumber;
 
-    private int bonuses;
+    private Integer bonuses;
 
-    private int price;
+    private Integer price;
 
     private String wheelR;
     private boolean executed;

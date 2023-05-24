@@ -7,6 +7,7 @@ import org.springframework.data.repository.query.Param;
 import ru.nsu.carwash_server.models.OrdersTire;
 
 import javax.transaction.Transactional;
+import java.util.List;
 import java.util.Optional;
 
 public interface OrdersTireRepository extends JpaRepository<OrdersTire, Long> {
@@ -26,4 +27,8 @@ public interface OrdersTireRepository extends JpaRepository<OrdersTire, Long> {
                              @Param("PriceR18") Integer priceR18, @Param("PriceR19") Integer priceR19,
                              @Param("PriceR20") Integer priceR20, @Param("PriceR21") Integer priceR21,
                              @Param("PriceR22") Integer priceR22, @Param("Role") String role);
+
+    @Transactional
+    @Query(value = "SELECT name FROM orders_tire", nativeQuery = true)
+    Optional<List<String>> getActualOrders();
 }

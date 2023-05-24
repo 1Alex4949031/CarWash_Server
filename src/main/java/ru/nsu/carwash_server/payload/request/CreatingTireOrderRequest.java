@@ -13,11 +13,13 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class CreatingOrderRequest {
+public class CreatingTireOrderRequest {
 
-    private String mainOrder;
+    private List<String> orders;
 
-    private List<String> extraOrders;
+    private String userContacts;
+
+    private String wheelR;
 
     @NotNull
     private Date startTime;
@@ -28,13 +30,17 @@ public class CreatingOrderRequest {
 
     private String specialist;
 
-    private String autoNumber;
-
     private int boxNumber;
+
+    private int bonuses;
 
     private String comments;
 
-    private String fullName;
+    private String autoNumber;
+
+    private int autoType;
 
     private boolean executed;
+
+    private Integer price = null;
 }

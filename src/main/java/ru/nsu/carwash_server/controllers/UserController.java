@@ -26,7 +26,8 @@ import java.util.List;
 @CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
 @RequestMapping("/api/user")
-public class UserController {
+public class
+UserController {
     private final UserRepository userRepository;
 
     private final RefreshTokenService refreshTokenService;

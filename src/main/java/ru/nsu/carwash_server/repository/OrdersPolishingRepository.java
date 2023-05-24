@@ -8,6 +8,7 @@ import org.springframework.stereotype.Repository;
 import ru.nsu.carwash_server.models.OrdersPolishing;
 
 import javax.transaction.Transactional;
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -26,4 +27,8 @@ public interface OrdersPolishingRepository extends JpaRepository<OrdersPolishing
                                 @Param("PriceSecondType") Integer priceSecond, @Param("PriceThirdType") Integer priceThirdType,
                                 @Param("TimeFirstType") Integer timeFirst, @Param("TimeSecondType") Integer timeSecond,
                                 @Param("TimeThirdType") Integer timeThird);
+
+    @Transactional
+    @Query(value = "SELECT name FROM orders_polishing",nativeQuery = true)
+    Optional<List<String>> getActualOrders();
 }

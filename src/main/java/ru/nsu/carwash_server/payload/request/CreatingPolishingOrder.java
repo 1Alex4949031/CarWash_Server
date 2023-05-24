@@ -1,26 +1,20 @@
 package ru.nsu.carwash_server.payload.request;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
 import javax.validation.constraints.NotNull;
 import java.util.Date;
 import java.util.List;
 
 @Data
-@AllArgsConstructor
-@NoArgsConstructor
-@Builder
-public class BookingTireOrderRequest {
+public class CreatingPolishingOrder {
 
     private List<String> orders;
 
-    private String wheelR;
-
     @NotNull
     private Date startTime;
+
+    private String userContacts;
 
     private Date endTime;
 

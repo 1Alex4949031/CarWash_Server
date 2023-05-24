@@ -1,5 +1,6 @@
 package ru.nsu.carwash_server.payload.response;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -19,6 +20,7 @@ public class UpdateOrderInfoResponse {
 
     private String name;
 
+    @JsonFormat(timezone="Asia/Novosibirsk")
     private Date startTime;
 
     private String administrator;
@@ -35,5 +37,6 @@ public class UpdateOrderInfoResponse {
 
     private boolean executed;
 
+    @JsonFormat(timezone="Asia/Novosibirsk")
     private Date endTime;
 }

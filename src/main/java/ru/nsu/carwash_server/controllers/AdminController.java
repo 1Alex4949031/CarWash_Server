@@ -177,47 +177,4 @@ public class AdminController {
                 + " получил почту " + updateUserInfoRequest.getEmail()
                 + " и новый телефон " + updateUserInfoRequest.getUsername()));
     }
-
-//    @PostMapping("/createOrder")
-//    @PreAuthorize("hasRole('ADMINISTRATOR') or hasRole('ADMIN')")
-//    public ResponseEntity<?> newUserOrder(@Valid @RequestBody CreatingOrderRequest creatingOrderRequest) {
-//        List<String> strExtraOrders = creatingOrderRequest.getExtraOrders();
-//        List<OrdersAdditional> ordersAdditional = new ArrayList<>();
-//        //Мэин заказ из стр в енум
-//        EOrderMain orderMain;
-//        try {
-//            orderMain = EOrderMain.valueOf(creatingOrderRequest.getMainOrder());
-//        } catch (IllegalArgumentException e) {
-//            throw new RuntimeException("Error:Несуществующий основной заказ");
-//        }
-//
-//        //Переводим дополнительные заказы из стр в енум
-//        if (strExtraOrders != null && !strExtraOrders.isEmpty()) {
-//            Set<EOrderAdditional> extraOrdersList = EnumSet.allOf(EOrderAdditional.class);
-//            ordersAdditional = strExtraOrders.stream().map(order -> {
-//                Optional<EOrderAdditional> eOrderAdditional = extraOrdersList.stream()
-//                        .filter(r -> r.name().equalsIgnoreCase(order))
-//                        .findAny();
-//                if (eOrderAdditional.isPresent()) {
-//                    return extraOrdersRepository.findByName(eOrderAdditional.get())
-//                            .orElseThrow(() -> new RuntimeException("Error: Не существующая дополнительная услуга"));
-//                } else {
-//                    throw new RuntimeException("Error:Не существующая дополнительная услуга");
-//                }
-//            }).collect(Collectors.toList());
-//        }
-//
-//        var startTime = creatingOrderRequest.getStartTime();
-//        var boxNumber = creatingOrderRequest.getBoxNumber();
-//        Order newOrder = new Order(orderMain, ordersAdditional, startTime, creatingOrderRequest.getEndTime(),
-//                creatingOrderRequest.getAdministrator(), creatingOrderRequest.getSpecialist(), boxNumber,
-//                bookingOrderRequest.getBonuses(), true, false,
-//                bookingOrderRequest.getComments(), userAuto, user);
-//
-//        ordersRepository.save(newOrder);
-//        return ResponseEntity.ok(new OrderInfoResponse(newOrder.getId(), orderMain, ordersAdditional,
-//                newOrder.getStartTime(), newOrder.getEndTime(), newOrder.getAdministrator(), newOrder.getSpecialist(),
-//                newOrder.getBoxNumber(), newOrder.getBonuses(), newOrder.isBooked(),
-//                newOrder.isExecuted(), newOrder.getComments(), newOrder.getUser().getId()));
-//    }
 }

@@ -13,7 +13,7 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class BookingWashingOrderRequest {
+public class BookingWashingPolishingOrderRequest {
 
     private List<String> orders;
 
@@ -25,8 +25,6 @@ public class BookingWashingOrderRequest {
     private String administrator;
 
     private String specialist;
-
-    private Long autoId;
 
     private int boxNumber;
 

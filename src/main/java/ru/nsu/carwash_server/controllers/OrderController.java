@@ -3,6 +3,7 @@ package ru.nsu.carwash_server.controllers;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -20,15 +21,22 @@ import ru.nsu.carwash_server.models.OrdersWashing;
 import ru.nsu.carwash_server.models.User;
 import ru.nsu.carwash_server.models.exception.NotInDataBaseException;
 import ru.nsu.carwash_server.models.helpers.SingleOrderResponse;
+import ru.nsu.carwash_server.models.helpers.TimeIntervals;
 import ru.nsu.carwash_server.payload.request.BookingTireOrderRequest;
-import ru.nsu.carwash_server.payload.request.BookingWashingOrderRequest;
+import ru.nsu.carwash_server.payload.request.BookingWashingPolishingOrderRequest;
+import ru.nsu.carwash_server.payload.request.CreatingPolishingOrder;
+import ru.nsu.carwash_server.payload.request.CreatingTireOrderRequest;
+import ru.nsu.carwash_server.payload.request.CreatingWashingOrder;
 import ru.nsu.carwash_server.payload.request.GetBookedOrdersInTimeIntervalRequest;
+import ru.nsu.carwash_server.payload.request.OrdersArrayPriceAndGoodTimeRequest;
 import ru.nsu.carwash_server.payload.request.OrdersArrayPriceTimeRequest;
 import ru.nsu.carwash_server.payload.request.UpdateOrderInfoRequest;
+import ru.nsu.carwash_server.payload.response.ActualOrdersResponse;
 import ru.nsu.carwash_server.payload.response.ConnectedOrdersResponse;
 import ru.nsu.carwash_server.payload.response.MessageResponse;
 import ru.nsu.carwash_server.payload.response.OrderInfoResponse;
 import ru.nsu.carwash_server.payload.response.OrdersArrayResponse;
+import ru.nsu.carwash_server.payload.response.TimeAndPriceAndFreeTimeResponse;
 import ru.nsu.carwash_server.payload.response.TimeAndPriceResponse;
 import ru.nsu.carwash_server.repository.OrdersPolishingRepository;
 import ru.nsu.carwash_server.repository.OrdersRepository;
@@ -37,9 +45,14 @@ import ru.nsu.carwash_server.repository.OrdersWashingRepository;
 import ru.nsu.carwash_server.repository.UserRepository;
 import ru.nsu.carwash_server.security.services.UserDetailsImpl;
 
+import javax.transaction.Transactional;
 import javax.validation.Valid;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 
 @CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
@@ -73,7 +86,7 @@ public class OrderController {
     @PutMapping("/updateOrderInfo")
     public ResponseEntity<?> updateOrderInfo(@Valid @RequestBody UpdateOrderInfoRequest updateOrderInfoRequest) {
         var user = userRepository.findByUsername(updateOrderInfoRequest.getUserPhone())
-                                .orElseThrow(() -> new NotInDataBaseException("пользователей не найден пользователь с айди: ", updateOrderInfoRequest.getUserPhone().toString()));
+                .orElseThrow(() -> new NotInDataBaseException("пользователей не найден пользователь с айди: ", updateOrderInfoRequest.getUserPhone().toString()));
 
         ordersRepository.updateOrderInfo(user.getId(), updateOrderInfoRequest.getPrice(),
                 updateOrderInfoRequest.getAutoNumber(), updateOrderInfoRequest.getSpecialist(),
@@ -85,8 +98,8 @@ public class OrderController {
         return ResponseEntity.ok(new MessageResponse("Информация изменена"));
     }
 
-    @GetMapping("/getActualOrders")
-    public ResponseEntity<?> getActualOrders(@RequestParam(name = "orderName", required = true) String orderName) {
+    @GetMapping("/getActualWashingOrders")
+    public ResponseEntity<?> getActualWashingOrders(@RequestParam(name = "orderName", required = true) String orderName) {
         var includedOrders = ordersWashingRepository.findAllIncluded(orderName)
                 .orElse(null);
         var connectedOrders = ordersWashingRepository.findAllConnected(orderName)
@@ -94,59 +107,169 @@ public class OrderController {
         return ResponseEntity.ok(new ConnectedOrdersResponse(includedOrders, connectedOrders));
     }
 
+    @GetMapping("/getActualPolishingOrders")
+    public ResponseEntity<?> getActualPolishingOrders() {
+        var orders = ordersPolishingRepository.getActualOrders()
+                .orElse(null);
+        return ResponseEntity.ok(new ActualOrdersResponse(orders));
+    }
+
+    @GetMapping("/getActualTireOrders")
+    public ResponseEntity<?> getActualTireOrders() {
+        var orders = ordersTireRepository.getActualOrders()
+                .orElse(null);
+        return ResponseEntity.ok(new ActualOrdersResponse(orders));
+    }
+
+
     @PostMapping("/getBookedTimeInOneDay")
     public ResponseEntity<?> getBookedTimeInOneDay(@Valid @RequestBody GetBookedOrdersInTimeIntervalRequest
                                                            bookedOrdersInTimeIntervalRequest) {
+
         List<Order> orders = ordersRepository
                 .getBookedOrdersInOneDayFull(bookedOrdersInTimeIntervalRequest.getStartTime(),
                         bookedOrdersInTimeIntervalRequest.getEndTime());
-        List<SingleOrderResponse> ordersForResponse = new ArrayList<>();
-        for (var item : orders) {
-            SingleOrderResponse newItem;
-            switch (item.getOrderType()) {
-                case "polishing" -> {
-                    List<String> stringOrders = new ArrayList<>();
-                    for (var currentOrder : item.getOrdersPolishings()) {
-                        stringOrders.add(currentOrder.getName().replace("_", " "));
-                    }
-                    newItem = new SingleOrderResponse(item.getId(), item.getStartTime(), item.getEndTime(),
-                            item.getAdministrator(), item.getSpecialist(), item.getAutoNumber(), item.getAutoType(),
-                            item.getBoxNumber(), item.getBonuses(), item.getPrice(), item.getWheelR(), item.isExecuted(),
-                            item.getComments(), stringOrders, item.getUser().getPhone(), item.getOrderType());
-                    break;
-                }
-                case "wash" -> {
-                    List<String> stringOrders = new ArrayList<>();
-                    for (var currentOrder : item.getOrdersWashing()) {
-                        stringOrders.add(currentOrder.getName().replace("_", " "));
-                    }
-
-                    newItem = new SingleOrderResponse(item.getId(), item.getStartTime(), item.getEndTime(),
-                            item.getAdministrator(), item.getSpecialist(), item.getAutoNumber(), item.getAutoType(),
-                            item.getBoxNumber(), item.getBonuses(), item.getPrice(), item.getWheelR(), item.isExecuted(),
-                            item.getComments(), stringOrders, item.getUser().getPhone(), item.getOrderType());
-                    break;
-                }
-                case "tire" -> {
-                    List<String> stringOrders = new ArrayList<>();
-                    for (var currentOrder : item.getOrdersTires()) {
-                        stringOrders.add(currentOrder.getName().replace("_", " "));
-                    }
-                    newItem = new SingleOrderResponse(item.getId(), item.getStartTime(), item.getEndTime(),
-                            item.getAdministrator(), item.getSpecialist(), item.getAutoNumber(), item.getAutoType(),
-                            item.getBoxNumber(), item.getBonuses(), item.getPrice(), item.getWheelR(), item.isExecuted(),
-                            item.getComments(), stringOrders, item.getUser().getPhone(), item.getOrderType());
-                    break;
-                }
-                default -> newItem = null;
-            }
-            ordersForResponse.add(newItem);
-        }
+        List<SingleOrderResponse> ordersForResponse = getTimeAndPriceOfOrders(orders);
         return ResponseEntity.ok(new OrdersArrayResponse(ordersForResponse));
     }
 
+    @PostMapping("/getPriceAndTimeForSite")
+    public ResponseEntity<?> getPriceAndTimeForSite(@Valid @RequestBody OrdersArrayPriceAndGoodTimeRequest ordersArrayPriceTimeRequest) {
+
+        List<TimeIntervals> timeIntervals = new ArrayList<>();
+        int time = 0;
+        int price = 0;
+        switch (ordersArrayPriceTimeRequest.getOrderType()) {
+            case "wash" -> {
+                price = washingOrderPrice(ordersArrayPriceTimeRequest.getOrders(), ordersArrayPriceTimeRequest.getBodyType());
+                time = washingOrderTime(ordersArrayPriceTimeRequest.getOrders(), ordersArrayPriceTimeRequest.getBodyType());
+            }
+            case "tire" ->
+                    price = tireOrderPrice(ordersArrayPriceTimeRequest.getOrders(), ordersArrayPriceTimeRequest.getWheelR());
+            case "polishing" -> {
+                price = polishingOrderPrice(ordersArrayPriceTimeRequest.getOrders(), ordersArrayPriceTimeRequest.getBodyType());
+                time = polishingOrderTime(ordersArrayPriceTimeRequest.getOrders(), ordersArrayPriceTimeRequest.getBodyType());
+            }
+        }
+
+        int timeSkip = 0;
+        Date startTimeFromRequest = ordersArrayPriceTimeRequest.getStartTime();
+        if (time >= 75) {
+            timeSkip = 2;
+            for (int i = 8; i < 20; i += timeSkip) {
+                LocalDateTime localDateStartTime = LocalDateTime.ofInstant(startTimeFromRequest.toInstant(),
+                                ZoneId.systemDefault())
+                        .withHour(i)
+                        .withMinute(0)
+                        .withSecond(0);
+                Date startTime = Date.from(localDateStartTime.atZone(ZoneId.systemDefault()).toInstant());
+
+                LocalDateTime localDateEndTime = LocalDateTime.ofInstant(startTimeFromRequest.toInstant(),
+                                ZoneId.systemDefault())
+                        .withHour(i + timeSkip)
+                        .withMinute(0)
+                        .withSecond(0);
+                Date endTime = Date.from(localDateEndTime.atZone(ZoneId.systemDefault()).toInstant());
+
+                TimeIntervals singleTimeIntervalFirstBox = new TimeIntervals(startTime, endTime, 1);
+                timeIntervals.add(singleTimeIntervalFirstBox);
+                TimeIntervals singleTimeIntervalSecondBox = new TimeIntervals(startTime, endTime, 2);
+                timeIntervals.add(singleTimeIntervalSecondBox);
+                TimeIntervals singleTimeIntervalThirdBox = new TimeIntervals(startTime, endTime, 3);
+                timeIntervals.add(singleTimeIntervalThirdBox);
+            }
+            for (int i = 9; i < 19; i += timeSkip) {
+                LocalDateTime localDateStartTime = LocalDateTime.ofInstant(startTimeFromRequest.toInstant(),
+                                ZoneId.systemDefault()).withHour(i)
+                        .withMinute(0)
+                        .withSecond(0);
+                Date startTime = Date.from(localDateStartTime.atZone(ZoneId.systemDefault()).toInstant());
+
+                LocalDateTime localDateEndTime = LocalDateTime.ofInstant(startTimeFromRequest.toInstant(),
+                                ZoneId.systemDefault())
+                        .withHour(i + timeSkip)
+                        .withMinute(0)
+                        .withSecond(0);
+                Date endTime = Date.from(localDateEndTime.atZone(ZoneId.systemDefault()).toInstant());
+
+                TimeIntervals singleTimeIntervalFirstBox = new TimeIntervals(startTime, endTime, 1);
+                timeIntervals.add(singleTimeIntervalFirstBox);
+                TimeIntervals singleTimeIntervalSecondBox = new TimeIntervals(startTime, endTime, 2);
+                timeIntervals.add(singleTimeIntervalSecondBox);
+                TimeIntervals singleTimeIntervalThirdBox = new TimeIntervals(startTime, endTime, 3);
+                timeIntervals.add(singleTimeIntervalThirdBox);
+            }
+        } else {
+            timeSkip = 1;
+            for (int i = 8; i < 22; i += timeSkip) {
+                LocalDateTime localDateStartTime = LocalDateTime.ofInstant(startTimeFromRequest.toInstant(),
+                                ZoneId.systemDefault())
+                        .withHour(i)
+                        .withMinute(0)
+                        .withSecond(0);
+                Date startTime = Date.from(localDateStartTime.atZone(ZoneId.systemDefault()).toInstant());
+
+                LocalDateTime localDateEndTime = LocalDateTime.ofInstant(startTimeFromRequest.toInstant(),
+                                ZoneId.systemDefault())
+                        .withHour(i + timeSkip)
+                        .withMinute(0)
+                        .withSecond(0);
+                Date endTime = Date.from(localDateEndTime.atZone(ZoneId.systemDefault()).toInstant());
+
+                TimeIntervals singleTimeIntervalFirstBox = new TimeIntervals(startTime, endTime, 1);
+                timeIntervals.add(singleTimeIntervalFirstBox);
+                TimeIntervals singleTimeIntervalSecondBox = new TimeIntervals(startTime, endTime, 2);
+                timeIntervals.add(singleTimeIntervalSecondBox);
+                TimeIntervals singleTimeIntervalThirdBox = new TimeIntervals(startTime, endTime, 3);
+                timeIntervals.add(singleTimeIntervalThirdBox);
+            }
+        }
+
+
+        List<Order> orders = ordersRepository
+                .getBookedOrdersInOneDayFull(ordersArrayPriceTimeRequest.getStartTime(),
+                        ordersArrayPriceTimeRequest.getEndTime());
+
+        List<SingleOrderResponse> bookedOrders = getTimeAndPriceOfOrders(orders);
+
+        List<TimeIntervals> clearOrders = new ArrayList<>(timeIntervals);
+
+        for (var bookedOrder : bookedOrders) {
+            for (var freeTime : timeIntervals) {
+                Date startTimeBooked = bookedOrder.getStartTime();
+                Date endTimeBooked = bookedOrder.getEndTime();
+                Date startTimeFree = freeTime.getStartTime();
+                Date endTimeFree = freeTime.getEndTime();
+                int freeBox = freeTime.getBox();
+                int bookedBox = bookedOrder.getBoxNumber();
+                if (((startTimeFree.compareTo(startTimeBooked) >= 0 && endTimeFree.compareTo(endTimeBooked) <= 0)
+                        || (startTimeFree.compareTo(startTimeBooked) <= 0 && endTimeFree.compareTo(startTimeBooked) > 0)
+                        || (startTimeFree.compareTo(endTimeBooked) < 0 && endTimeBooked.compareTo(endTimeFree) <= 0))
+                        && freeBox == bookedBox){
+                    TimeIntervals timeIntervals1 = new TimeIntervals(startTimeFree, endTimeFree, freeBox);
+                    clearOrders.remove(timeIntervals1);
+                }
+            }
+        }
+        List<TimeIntervals> noDuplicatesTimeList = new ArrayList<>(clearOrders);
+
+        for (var firstInterval : clearOrders) {
+            for (var secondInterval : clearOrders) {
+                if (noDuplicatesTimeList.contains(secondInterval) && (firstInterval.getStartTime().equals(secondInterval.getStartTime())
+                        && firstInterval.getEndTime().equals(secondInterval.getEndTime())
+                        && !Objects.equals(firstInterval.getBox(), secondInterval.getBox()))
+                        && noDuplicatesTimeList.contains(secondInterval) && noDuplicatesTimeList.contains(firstInterval)) {
+                    noDuplicatesTimeList.remove(secondInterval);
+                }
+            }
+        }
+
+        return ResponseEntity.ok(new TimeAndPriceAndFreeTimeResponse(price, time, noDuplicatesTimeList));
+    }
+
+    @Transactional
     @PostMapping("/bookWashingOrder")
-    public ResponseEntity<?> newWashingOrder(@Valid @RequestBody BookingWashingOrderRequest bookingOrderRequest) {
+    public ResponseEntity<?> newWashingOrder(@Valid @RequestBody BookingWashingPolishingOrderRequest bookingOrderRequest) {
         UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         User user = new User(userDetails.getId());
         List<OrdersWashing> ordersWashings = new ArrayList<>();
@@ -181,8 +304,9 @@ public class OrderController {
                 newOrder.getUser().getId(), newOrder.getPrice(), "wash", "wash"));
     }
 
+    @Transactional
     @PostMapping("/bookPolishingOrder")
-    public ResponseEntity<?> newPolishingOrder(@Valid @RequestBody BookingWashingOrderRequest bookingOrderRequest) {
+    public ResponseEntity<?> newPolishingOrder(@Valid @RequestBody BookingWashingPolishingOrderRequest bookingOrderRequest) {
         UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         User user = new User(userDetails.getId());
         List<OrdersPolishing> ordersPolishings = new ArrayList<>();
@@ -216,6 +340,7 @@ public class OrderController {
                 newOrder.getUser().getId(), newOrder.getPrice(), newOrder.getOrderType(), "polishing"));
     }
 
+    @Transactional
     @PostMapping("/bookTireOrder")
     public ResponseEntity<?> newTireOrder(@Valid @RequestBody BookingTireOrderRequest bookingOrderRequest) {
         UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
@@ -268,6 +393,115 @@ public class OrderController {
             }
         }
         return ResponseEntity.ok(new TimeAndPriceResponse(price, time));
+    }
+
+
+    @PostMapping("/createWashingOrder")
+    @Transactional
+    @PreAuthorize("hasRole('MODERATOR') or hasRole('ADMIN')")
+    public ResponseEntity<?> creatingWashingOrder(@Valid @RequestBody CreatingWashingOrder bookingOrderRequest) {
+        List<OrdersWashing> ordersWashings = new ArrayList<>();
+
+        for (var order : bookingOrderRequest.getOrders()) {
+            var currentOrder = ordersWashingRepository.findByName(order.replace(" ", "_"))
+                    .orElseThrow(() -> new NotInDataBaseException("услуг мойки не найдена услуга: ", order));
+            ordersWashings.add(currentOrder);
+        }
+
+        Integer price = bookingOrderRequest.getPrice();
+
+        if (bookingOrderRequest.getPrice() == null || bookingOrderRequest.getPrice() == 0) {
+            price = washingOrderPrice(bookingOrderRequest.getOrders(), bookingOrderRequest.getAutoType());
+            //логика подсчёта цены
+        }
+
+        Order newOrder = new Order(ordersWashings, bookingOrderRequest.getStartTime(), bookingOrderRequest.getEndTime(),
+                bookingOrderRequest.getAdministrator(), bookingOrderRequest.getSpecialist(),
+                bookingOrderRequest.getBoxNumber(), bookingOrderRequest.getBonuses(),
+                false, bookingOrderRequest.getComments(),
+                bookingOrderRequest.getAutoNumber(),
+                bookingOrderRequest.getAutoType(), bookingOrderRequest.getUserContacts(), "wash");
+        newOrder.setPrice(price);
+        ordersRepository.save(newOrder);
+
+        return ResponseEntity.ok(new OrderInfoResponse(newOrder.getId(), bookingOrderRequest.getOrders(),
+                newOrder.getStartTime(), newOrder.getEndTime(), newOrder.getAdministrator(), newOrder.getSpecialist(),
+                newOrder.getBoxNumber(), bookingOrderRequest.getAutoNumber(),
+                bookingOrderRequest.getAutoType(), newOrder.getBonuses(),
+                newOrder.isExecuted(), newOrder.getComments(), newOrder.getPrice(), "wash", "wash", bookingOrderRequest.getUserContacts()));
+    }
+
+
+    @PostMapping("/createPolishingOrder")
+    @Transactional
+    @PreAuthorize("hasRole('MODERATOR') or hasRole('ADMIN')")
+    public ResponseEntity<?> creatingPolishingOrder(@Valid @RequestBody CreatingPolishingOrder bookingOrderRequest) {
+        List<OrdersPolishing> ordersPolishings = new ArrayList<>();
+
+        for (var order : bookingOrderRequest.getOrders()) {
+            var currentOrder = ordersPolishingRepository.findByName(order.replace(" ", "_"))
+                    .orElseThrow(() -> new NotInDataBaseException("услуг полировки не найдена услуга: ", order));
+            ordersPolishings.add(currentOrder);
+        }
+
+        Integer price = bookingOrderRequest.getPrice();
+
+        if (bookingOrderRequest.getPrice() == null || bookingOrderRequest.getPrice() == 0) {
+            price = washingOrderPrice(bookingOrderRequest.getOrders(), bookingOrderRequest.getAutoType());
+            //логика подсчёта цены
+        }
+
+        Order newOrder = new Order(ordersPolishings, bookingOrderRequest.getStartTime(), bookingOrderRequest.getEndTime(),
+                bookingOrderRequest.getAdministrator(), bookingOrderRequest.getSpecialist(),
+                bookingOrderRequest.getBoxNumber(), bookingOrderRequest.getBonuses(),
+                false, bookingOrderRequest.getComments(),
+                bookingOrderRequest.getAutoNumber(),
+                bookingOrderRequest.getAutoType(), bookingOrderRequest.getUserContacts(), "polishing", price);
+
+        newOrder.setPrice(price);
+        ordersRepository.save(newOrder);
+
+        return ResponseEntity.ok(new OrderInfoResponse(newOrder.getId(), bookingOrderRequest.getOrders(),
+                newOrder.getStartTime(), newOrder.getEndTime(), newOrder.getAdministrator(), newOrder.getSpecialist(),
+                newOrder.getBoxNumber(), newOrder.getAutoNumber(),
+                newOrder.getAutoType(), newOrder.getBonuses(),
+                newOrder.isExecuted(), newOrder.getComments(),
+                newOrder.getPrice(), newOrder.getOrderType(), "polishing", bookingOrderRequest.getUserContacts()));
+    }
+
+    @PostMapping("/createTireOrder")
+    @Transactional
+    @PreAuthorize("hasRole('MODERATOR') or hasRole('ADMIN')")
+    public ResponseEntity<?> createTireOrder(@Valid @RequestBody CreatingTireOrderRequest bookingOrderRequest) {
+        List<OrdersTire> ordersTireService = new ArrayList<>();
+
+        for (var order : bookingOrderRequest.getOrders()) {
+            var currentOrder = ordersTireRepository.findByName(order.replace(" ", "_"))
+                    .orElseThrow(() -> new NotInDataBaseException("услуг шиномонтажа не найдена услуга: ", order));
+            ordersTireService.add(currentOrder);
+        }
+
+        Integer price = bookingOrderRequest.getPrice();
+
+        if (bookingOrderRequest.getPrice() == null || bookingOrderRequest.getPrice() == 0) {
+            price = tireOrderPrice(bookingOrderRequest.getOrders(), bookingOrderRequest.getWheelR());
+            //логика подсчёта цены
+        }
+
+        Order newOrder = new Order(ordersTireService, bookingOrderRequest.getStartTime(), bookingOrderRequest.getEndTime(),
+                bookingOrderRequest.getAdministrator(), bookingOrderRequest.getSpecialist(),
+                bookingOrderRequest.getBoxNumber(), bookingOrderRequest.getBonuses(),
+                false, bookingOrderRequest.getComments(),
+                bookingOrderRequest.getAutoNumber(), bookingOrderRequest.getAutoType(),
+                bookingOrderRequest.getUserContacts(), "tire", price, bookingOrderRequest.getWheelR());
+        ordersRepository.save(newOrder);
+
+        return ResponseEntity.ok(new OrderInfoResponse(newOrder.getId(), bookingOrderRequest.getOrders(),
+                newOrder.getStartTime(), newOrder.getEndTime(), newOrder.getAdministrator(), newOrder.getSpecialist(),
+                newOrder.getBoxNumber(), newOrder.getAutoNumber(),
+                newOrder.getAutoType(), newOrder.getBonuses(),
+                newOrder.isExecuted(), newOrder.getComments(), newOrder.getPrice(),
+                newOrder.getOrderType(), newOrder.getWheelR(), bookingOrderRequest.getUserContacts()));
     }
 
     public int washingOrderPrice(List<String> orderArray, int bodyType) {
@@ -368,6 +602,73 @@ public class OrderController {
             }
         }
         return time;
+    }
+
+
+    public List<SingleOrderResponse> getTimeAndPriceOfOrders(List<Order> orders) {
+        List<SingleOrderResponse> ordersForResponse = new ArrayList<>();
+
+        for (var item : orders) {
+            SingleOrderResponse newItem;
+            switch (item.getOrderType()) {
+                case "polishing" -> {
+                    List<String> stringOrders = new ArrayList<>();
+                    for (var currentOrder : item.getOrdersPolishings()) {
+                        stringOrders.add(currentOrder.getName().replace("_", " "));
+                    }
+                    String userContact;
+                    if (item.getUser() == null) {
+                        userContact = item.getUserContacts();
+                    } else {
+                        userContact = item.getUser().getPhone();
+                    }
+
+                    newItem = new SingleOrderResponse(item.getId(), item.getStartTime(), item.getEndTime(),
+                            item.getAdministrator(), item.getSpecialist(), item.getAutoNumber(), item.getAutoType(),
+                            item.getBoxNumber(), item.getBonuses(), item.getPrice(), item.getWheelR(), item.isExecuted(),
+                            item.getComments(), stringOrders, userContact, item.getOrderType());
+                    break;
+                }
+                case "wash" -> {
+                    List<String> stringOrders = new ArrayList<>();
+                    for (var currentOrder : item.getOrdersWashing()) {
+                        stringOrders.add(currentOrder.getName().replace("_", " "));
+                    }
+                    String userContact;
+                    if (item.getUser() == null) {
+                        userContact = item.getUserContacts();
+                    } else {
+                        userContact = item.getUser().getPhone();
+                    }
+                    newItem = new SingleOrderResponse(item.getId(), item.getStartTime(), item.getEndTime(),
+                            item.getAdministrator(), item.getSpecialist(), item.getAutoNumber(), item.getAutoType(),
+                            item.getBoxNumber(), item.getBonuses(), item.getPrice(), item.getWheelR(), item.isExecuted(),
+                            item.getComments(), stringOrders, userContact, item.getOrderType());
+                    break;
+                }
+                case "tire" -> {
+                    List<String> stringOrders = new ArrayList<>();
+                    for (var currentOrder : item.getOrdersTires()) {
+                        stringOrders.add(currentOrder.getName().replace("_", " "));
+                    }
+                    String userContact;
+                    if (item.getUser() == null) {
+                        userContact = item.getUserContacts();
+                    } else {
+                        userContact = item.getUser().getPhone();
+                    }
+
+                    newItem = new SingleOrderResponse(item.getId(), item.getStartTime(), item.getEndTime(),
+                            item.getAdministrator(), item.getSpecialist(), item.getAutoNumber(), item.getAutoType(),
+                            item.getBoxNumber(), item.getBonuses(), item.getPrice(), item.getWheelR(), item.isExecuted(),
+                            item.getComments(), stringOrders, userContact, item.getOrderType());
+                    break;
+                }
+                default -> newItem = null;
+            }
+            ordersForResponse.add(newItem);
+        }
+        return ordersForResponse;
     }
 
 
