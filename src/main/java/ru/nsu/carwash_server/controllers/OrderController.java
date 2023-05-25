@@ -98,6 +98,26 @@ public class OrderController {
         return ResponseEntity.ok(new MessageResponse("Информация изменена"));
     }
 
+    @GetMapping("/getOrderInfo")
+    public ResponseEntity<?> getOrderInfo(@RequestParam(name = "orderId", required = true) Long orderId) {
+        var orderById = ordersRepository.getById(orderId);
+        List<String> ordersNames = new ArrayList<>();
+        for (var washOrder : orderById.getOrdersWashing()) {
+            ordersNames.add(washOrder.getName());
+        }
+        for (var polishingOrders : orderById.getOrdersPolishings()) {
+            ordersNames.add(polishingOrders.getName());
+        }
+        for (var tireOrders : orderById.getOrdersTires()) {
+            ordersNames.add(tireOrders.getName());
+        }
+        return ResponseEntity.ok(new SingleOrderResponse(orderId, orderById.getStartTime(),
+                orderById.getEndTime(), orderById.getAdministrator(), orderById.getSpecialist(),
+                orderById.getAutoNumber(), orderById.getAutoType(), orderById.getBoxNumber(), orderById.getBonuses(),
+                orderById.getPrice(), orderById.getWheelR(), orderById.isExecuted(),
+                orderById.getComments(), ordersNames, orderById.getUserContacts(), orderById.getOrderType()));
+    }
+
     @GetMapping("/getActualWashingOrders")
     public ResponseEntity<?> getActualWashingOrders(@RequestParam(name = "orderName", required = true) String orderName) {
         var includedOrders = ordersWashingRepository.findAllIncluded(orderName)
@@ -135,7 +155,6 @@ public class OrderController {
 
     @PostMapping("/getPriceAndTimeForSite")
     public ResponseEntity<?> getPriceAndTimeForSite(@Valid @RequestBody OrdersArrayPriceAndGoodTimeRequest ordersArrayPriceTimeRequest) {
-
         List<TimeIntervals> timeIntervals = new ArrayList<>();
         int time = 0;
         int price = 0;
@@ -245,7 +264,7 @@ public class OrderController {
                 if (((startTimeFree.compareTo(startTimeBooked) >= 0 && endTimeFree.compareTo(endTimeBooked) <= 0)
                         || (startTimeFree.compareTo(startTimeBooked) <= 0 && endTimeFree.compareTo(startTimeBooked) > 0)
                         || (startTimeFree.compareTo(endTimeBooked) < 0 && endTimeBooked.compareTo(endTimeFree) <= 0))
-                        && freeBox == bookedBox){
+                        && freeBox == bookedBox) {
                     TimeIntervals timeIntervals1 = new TimeIntervals(startTimeFree, endTimeFree, freeBox);
                     clearOrders.remove(timeIntervals1);
                 }
@@ -270,6 +289,9 @@ public class OrderController {
     @Transactional
     @PostMapping("/bookWashingOrder")
     public ResponseEntity<?> newWashingOrder(@Valid @RequestBody BookingWashingPolishingOrderRequest bookingOrderRequest) {
+        if (!checkTime(bookingOrderRequest.getStartTime(), bookingOrderRequest.getEndTime(), bookingOrderRequest.getBoxNumber())){
+            return ResponseEntity.badRequest().body(new MessageResponse("Error: Это время в этом боксе уже занято"));
+        }
         UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         User user = new User(userDetails.getId());
         List<OrdersWashing> ordersWashings = new ArrayList<>();
@@ -343,6 +365,10 @@ public class OrderController {
     @Transactional
     @PostMapping("/bookTireOrder")
     public ResponseEntity<?> newTireOrder(@Valid @RequestBody BookingTireOrderRequest bookingOrderRequest) {
+        if (!checkTime(bookingOrderRequest.getStartTime(), bookingOrderRequest.getEndTime(), bookingOrderRequest.getBoxNumber())){
+            return ResponseEntity.badRequest().body(new MessageResponse("Error: Это время в этом боксе уже занято"));
+        }
+
         UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         User user = new User(userDetails.getId());
         List<OrdersTire> ordersTireService = new ArrayList<>();
@@ -400,6 +426,10 @@ public class OrderController {
     @Transactional
     @PreAuthorize("hasRole('MODERATOR') or hasRole('ADMIN')")
     public ResponseEntity<?> creatingWashingOrder(@Valid @RequestBody CreatingWashingOrder bookingOrderRequest) {
+        if (!checkTime(bookingOrderRequest.getStartTime(), bookingOrderRequest.getEndTime(), bookingOrderRequest.getBoxNumber())) {
+            return ResponseEntity.badRequest().body(new MessageResponse("Error: Это время в этом боксе уже занято"));
+        }
+
         List<OrdersWashing> ordersWashings = new ArrayList<>();
 
         for (var order : bookingOrderRequest.getOrders()) {
@@ -436,6 +466,10 @@ public class OrderController {
     @Transactional
     @PreAuthorize("hasRole('MODERATOR') or hasRole('ADMIN')")
     public ResponseEntity<?> creatingPolishingOrder(@Valid @RequestBody CreatingPolishingOrder bookingOrderRequest) {
+        if (!checkTime(bookingOrderRequest.getStartTime(), bookingOrderRequest.getEndTime(), bookingOrderRequest.getBoxNumber())) {
+            return ResponseEntity.badRequest().body(new MessageResponse("Error: Это время в этом боксе уже занято"));
+        }
+
         List<OrdersPolishing> ordersPolishings = new ArrayList<>();
 
         for (var order : bookingOrderRequest.getOrders()) {
@@ -473,6 +507,10 @@ public class OrderController {
     @Transactional
     @PreAuthorize("hasRole('MODERATOR') or hasRole('ADMIN')")
     public ResponseEntity<?> createTireOrder(@Valid @RequestBody CreatingTireOrderRequest bookingOrderRequest) {
+        if (!checkTime(bookingOrderRequest.getStartTime(), bookingOrderRequest.getEndTime(), bookingOrderRequest.getBoxNumber())){
+            return ResponseEntity.badRequest().body(new MessageResponse("Error: Это время в этом боксе уже занято"));
+        }
+
         List<OrdersTire> ordersTireService = new ArrayList<>();
 
         for (var order : bookingOrderRequest.getOrders()) {
@@ -502,6 +540,27 @@ public class OrderController {
                 newOrder.getAutoType(), newOrder.getBonuses(),
                 newOrder.isExecuted(), newOrder.getComments(), newOrder.getPrice(),
                 newOrder.getOrderType(), newOrder.getWheelR(), bookingOrderRequest.getUserContacts()));
+    }
+
+    public boolean checkTime(Date startTime, Date endTime, int box) {
+        List<Order> orders = ordersRepository
+                .getBookedOrdersInOneDayFullInBox(startTime,
+                        endTime, box);
+
+        List<SingleOrderResponse> bookedOrders = getTimeAndPriceOfOrders(orders);
+
+        for (var bookedOrder : bookedOrders) {
+            Date startTimeBooked = bookedOrder.getStartTime();
+            Date endTimeBooked = bookedOrder.getEndTime();
+            int bookedBox = bookedOrder.getBoxNumber();
+            if (((startTime.compareTo(startTimeBooked) >= 0 && endTime.compareTo(endTimeBooked) <= 0)
+                    || (startTime.compareTo(startTimeBooked) <= 0 && endTime.compareTo(startTimeBooked) > 0)
+                    || (startTime.compareTo(endTimeBooked) < 0 && endTimeBooked.compareTo(endTime) <= 0))
+                    && box == bookedBox) {
+                return false;
+            }
+        }
+        return true;
     }
 
     public int washingOrderPrice(List<String> orderArray, int bodyType) {
