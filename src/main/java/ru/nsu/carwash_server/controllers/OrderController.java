@@ -33,6 +33,7 @@ import ru.nsu.carwash_server.payload.request.OrdersArrayPriceTimeRequest;
 import ru.nsu.carwash_server.payload.request.UpdateOrderInfoRequest;
 import ru.nsu.carwash_server.payload.response.ActualOrdersResponse;
 import ru.nsu.carwash_server.payload.response.ConnectedOrdersResponse;
+import ru.nsu.carwash_server.payload.response.MainAndAdditionalResponse;
 import ru.nsu.carwash_server.payload.response.MessageResponse;
 import ru.nsu.carwash_server.payload.response.OrderInfoResponse;
 import ru.nsu.carwash_server.payload.response.OrdersArrayResponse;
@@ -147,11 +148,30 @@ public class OrderController {
 
     @GetMapping("/getActualWashingOrders")
     public ResponseEntity<?> getActualWashingOrders(@RequestParam(name = "orderName", required = true) String orderName) {
-        var includedOrders = ordersWashingRepository.findAllIncluded(orderName)
-                .orElse(null);
-        var connectedOrders = ordersWashingRepository.findAllConnected(orderName)
-                .orElse(null);
+        List<String> connectedOrders = switch (orderName) {
+            case "Мойка_комплекс_(кузов_2_фазы_+_салон)" -> ordersWashingRepository.findAllAssociated("ELITE")
+                    .orElse(null);
+            case "Мойка_комплекс_(кузов_1_фаза_+_салон)" -> ordersWashingRepository.findAllAssociated("VIP")
+                    .orElse(null);
+            case "Мойка_кузова_2_фазы_без_протирки" -> ordersWashingRepository.findAllAssociated("Эконом")
+                    .orElse(null);
+            case "Мойка_кузова_2_фазы_с_протиркой" -> ordersWashingRepository.findAllAssociated("Стандарт")
+                    .orElse(null);
+            default -> new ArrayList<>();
+        };
+        List<String> includedOrders = new ArrayList<>();
+        includedOrders.add(orderName);
         return ResponseEntity.ok(new ConnectedOrdersResponse(includedOrders, connectedOrders));
+    }
+
+    @GetMapping("/getAllWashingOrders")
+    public ResponseEntity<?> getAllWashingOrders() {
+        var mainOrders = ordersWashingRepository.findAllByRole("main")
+                .orElse(null);
+        var additionalOrders = ordersWashingRepository.findAllByRole("additional")
+                .orElse(null);
+
+        return ResponseEntity.ok(new MainAndAdditionalResponse(mainOrders, additionalOrders));
     }
 
     @GetMapping("/getActualPolishingOrders")

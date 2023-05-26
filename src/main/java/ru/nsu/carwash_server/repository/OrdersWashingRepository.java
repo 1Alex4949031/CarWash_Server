@@ -30,11 +30,13 @@ public interface OrdersWashingRepository extends JpaRepository<OrdersWashing, Lo
 
     //Получить с каким заказом вместе идут услуги
     @Transactional
-    @Query(value = "SELECT name FROM orders_washing WHERE associated_order = :MainOrder", nativeQuery = true)
-    Optional<List<String>> findAllConnected(@Param("MainOrder") String name);
+    @Query(value = "SELECT name FROM orders_washing WHERE role = :Role", nativeQuery = true)
+    Optional<List<String>> findAllByRole(@Param("Role") String role);
 
-    //Получить какие услуги уже учитаны в этом заказе
     @Transactional
-    @Query(value = "SELECT name FROM orders_washing WHERE included_in = :MainOrder", nativeQuery = true)
-    Optional<List<String>> findAllIncluded(@Param("MainOrder") String name);
+    @Query(value = "SELECT name FROM orders_washing", nativeQuery = true)
+    Optional<List<String>> findAllName();
+
+    @Query(value = "SELECT name FROM orders_washing WHERE associated_order LIKE CONCAT('%', :mainOrder, '%')", nativeQuery = true)
+    Optional<List<String>> findAllAssociated(@Param("mainOrder") String mainOrder);
 }

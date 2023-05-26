@@ -8,23 +8,18 @@ import lombok.Setter;
 import lombok.ToString;
 
 import javax.persistence.Entity;
-import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.JoinTable;
-import javax.persistence.ManyToMany;
 import javax.persistence.Table;
-import java.util.ArrayList;
-import java.util.List;
 
 
 @Entity
 @Table(name = "orders_washing")
 @NoArgsConstructor
 @ToString
-@Getter @Setter
+@Getter
+@Setter
 @AllArgsConstructor
 public class OrdersWashing {
     @Id
@@ -48,17 +43,6 @@ public class OrdersWashing {
 
     private String role;
 
-    @ManyToMany(fetch = FetchType.LAZY)
-    @JoinTable(name = "orders_washing_included_in_link",
-            joinColumns = @JoinColumn(name = "washing_id"),
-            inverseJoinColumns = @JoinColumn(name = "orders_washing_included_in_id"))
-    @ToString.Exclude
-    private List<OrdersWashingIncludedIn> includedIn = new ArrayList<>();
+    private String associatedOrder;
 
-    @ManyToMany(fetch = FetchType.LAZY)
-    @JoinTable(name = "orders_washing_associated_link",
-            joinColumns = @JoinColumn(name = "washing_id"),
-            inverseJoinColumns = @JoinColumn(name = "orders_washing_associated_id"))
-    @ToString.Exclude
-    private List<OrdersWashingAssociated> ordersWashingAssociated = new ArrayList<>();
 }
