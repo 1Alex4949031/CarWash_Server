@@ -22,15 +22,16 @@ public interface OrdersRepository extends JpaRepository<Order, Long> {
             "specialist = COALESCE(:Specialist, specialist), bonuses = COALESCE(:Bonuses, bonuses)," +
             "comments = COALESCE(:Comments, comments), executed = COALESCE(:Executed, executed)," +
             "order_type = COALESCE(:OrderType, order_type), start_time = COALESCE(:StartTime, start_time)," +
-            "end_time = COALESCE(:EndTime, end_time)" +
+            "wheelr = COALESCE(:WheelR, wheelr), end_time = COALESCE(:EndTime, end_time), user_contacts = COALESCE(:UserPhone, user_contacts)" +
             "WHERE id = :OrderId", nativeQuery = true)
     void updateOrderInfo(@Param("UserId") Long userId,
                          @Param("Price") Integer price, @Param("AutoNumber") String autoNumber,
-                         @Param("Specialist") String specialist, @Param("Administrator") String administrator,
+                         @Param("Specialist") String specialist, @Param("WheelR") String wheelR,
+                         @Param("Administrator") String administrator,
                          @Param("BoxNumber") Integer boxNumber, @Param("OrderId") Long orderId,
                          @Param("Bonuses") Integer bonuses, @Param("Comments") String comments,
                          @Param("Executed") Boolean executed, @Param("StartTime") Date startTime,
-                         @Param("EndTime") Date endTime, @Param("OrderType") String orderType);
+                         @Param("EndTime") Date endTime, @Param("OrderType") String orderType, @Param("UserPhone") String userPhone);
 
     @Query(value = "SELECT * FROM orders WHERE start_time " +
             "BETWEEN :StartTime AND :EndTime " +

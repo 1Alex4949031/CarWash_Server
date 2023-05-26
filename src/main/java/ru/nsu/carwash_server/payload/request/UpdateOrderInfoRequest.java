@@ -17,6 +17,8 @@ public class UpdateOrderInfoRequest {
     @NotNull
     private Long orderId;
 
+    private String wheelR = null;
+
     private String userPhone;
 
     private String orderType;

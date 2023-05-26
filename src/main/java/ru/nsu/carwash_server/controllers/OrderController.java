@@ -85,21 +85,42 @@ public class OrderController {
 
     @PutMapping("/updateOrderInfo")
     public ResponseEntity<?> updateOrderInfo(@Valid @RequestBody UpdateOrderInfoRequest updateOrderInfoRequest) {
-        var user = userRepository.findByUsername(updateOrderInfoRequest.getUserPhone())
-                .orElseThrow(() -> new NotInDataBaseException("пользователей не найден пользователь с айди: ", updateOrderInfoRequest.getUserPhone().toString()));
-
-        ordersRepository.updateOrderInfo(user.getId(), updateOrderInfoRequest.getPrice(),
-                updateOrderInfoRequest.getAutoNumber(), updateOrderInfoRequest.getSpecialist(),
-                updateOrderInfoRequest.getAdministrator(), updateOrderInfoRequest.getBoxNumber(),
-                updateOrderInfoRequest.getOrderId(), updateOrderInfoRequest.getBonuses(),
-                updateOrderInfoRequest.getComments(), updateOrderInfoRequest.isExecuted(),
-                updateOrderInfoRequest.getStartTime(), updateOrderInfoRequest.getEndTime(),
-                updateOrderInfoRequest.getOrderType());
+        if (updateOrderInfoRequest.getStartTime() != null && updateOrderInfoRequest.getEndTime() != null){
+            if (!checkTime(updateOrderInfoRequest.getStartTime(), updateOrderInfoRequest.getEndTime(), updateOrderInfoRequest.getBoxNumber())) {
+                return ResponseEntity.badRequest().body(new MessageResponse("Error: Это время в этом боксе уже занято"));
+            }
+        }
+        var user = userRepository.findByUsername(updateOrderInfoRequest.getUserPhone());
+        String userContacts;
+        if (user.isPresent()) {
+            ordersRepository.updateOrderInfo(user.get().getId(), updateOrderInfoRequest.getPrice(),
+                    updateOrderInfoRequest.getAutoNumber(), updateOrderInfoRequest.getSpecialist(),
+                    updateOrderInfoRequest.getWheelR(),
+                    updateOrderInfoRequest.getAdministrator(), updateOrderInfoRequest.getBoxNumber(),
+                    updateOrderInfoRequest.getOrderId(), updateOrderInfoRequest.getBonuses(),
+                    updateOrderInfoRequest.getComments(), updateOrderInfoRequest.isExecuted(),
+                    updateOrderInfoRequest.getStartTime(), updateOrderInfoRequest.getEndTime(),
+                    updateOrderInfoRequest.getOrderType(), user.get().getPhone());
+        } else {
+            userContacts = updateOrderInfoRequest.getUserPhone();
+            ordersRepository.updateOrderInfo(null, updateOrderInfoRequest.getPrice(),
+                    updateOrderInfoRequest.getAutoNumber(), updateOrderInfoRequest.getSpecialist(),
+                    updateOrderInfoRequest.getWheelR(),
+                    updateOrderInfoRequest.getAdministrator(), updateOrderInfoRequest.getBoxNumber(),
+                    updateOrderInfoRequest.getOrderId(), updateOrderInfoRequest.getBonuses(),
+                    updateOrderInfoRequest.getComments(), updateOrderInfoRequest.isExecuted(),
+                    updateOrderInfoRequest.getStartTime(), updateOrderInfoRequest.getEndTime(),
+                    updateOrderInfoRequest.getOrderType(), userContacts);
+        }
         return ResponseEntity.ok(new MessageResponse("Информация изменена"));
     }
 
     @GetMapping("/getOrderInfo")
-    public ResponseEntity<?> getOrderInfo(@RequestParam(name = "orderId", required = true) Long orderId) {
+    public ResponseEntity<?> getOrderInfo(@RequestParam(name = "orderId", required = false) Long orderId) {
+        System.out.println(orderId);
+        if (orderId == null) {
+            return ResponseEntity.ok(new MessageResponse("Передан null в айди"));
+        }
         var orderById = ordersRepository.getById(orderId);
         List<String> ordersNames = new ArrayList<>();
         for (var washOrder : orderById.getOrdersWashing()) {
@@ -111,11 +132,17 @@ public class OrderController {
         for (var tireOrders : orderById.getOrdersTires()) {
             ordersNames.add(tireOrders.getName());
         }
+        String userPhone = "Нет информации";
+        if (orderById.getUserContacts() != null) {
+            userPhone = orderById.getUserContacts();
+        } else {
+            userPhone = orderById.getUser().getPhone();
+        }
         return ResponseEntity.ok(new SingleOrderResponse(orderId, orderById.getStartTime(),
                 orderById.getEndTime(), orderById.getAdministrator(), orderById.getSpecialist(),
                 orderById.getAutoNumber(), orderById.getAutoType(), orderById.getBoxNumber(), orderById.getBonuses(),
                 orderById.getPrice(), orderById.getWheelR(), orderById.isExecuted(),
-                orderById.getComments(), ordersNames, orderById.getUserContacts(), orderById.getOrderType()));
+                orderById.getComments(), ordersNames, userPhone, orderById.getOrderType()));
     }
 
     @GetMapping("/getActualWashingOrders")
@@ -171,80 +198,19 @@ public class OrderController {
             }
         }
 
-        int timeSkip = 0;
         Date startTimeFromRequest = ordersArrayPriceTimeRequest.getStartTime();
-        if (time >= 75) {
-            timeSkip = 2;
-            for (int i = 8; i < 20; i += timeSkip) {
-                LocalDateTime localDateStartTime = LocalDateTime.ofInstant(startTimeFromRequest.toInstant(),
-                                ZoneId.systemDefault())
-                        .withHour(i)
-                        .withMinute(0)
-                        .withSecond(0);
-                Date startTime = Date.from(localDateStartTime.atZone(ZoneId.systemDefault()).toInstant());
-
-                LocalDateTime localDateEndTime = LocalDateTime.ofInstant(startTimeFromRequest.toInstant(),
-                                ZoneId.systemDefault())
-                        .withHour(i + timeSkip)
-                        .withMinute(0)
-                        .withSecond(0);
-                Date endTime = Date.from(localDateEndTime.atZone(ZoneId.systemDefault()).toInstant());
-
-                TimeIntervals singleTimeIntervalFirstBox = new TimeIntervals(startTime, endTime, 1);
-                timeIntervals.add(singleTimeIntervalFirstBox);
-                TimeIntervals singleTimeIntervalSecondBox = new TimeIntervals(startTime, endTime, 2);
-                timeIntervals.add(singleTimeIntervalSecondBox);
-                TimeIntervals singleTimeIntervalThirdBox = new TimeIntervals(startTime, endTime, 3);
-                timeIntervals.add(singleTimeIntervalThirdBox);
-            }
-            for (int i = 9; i < 19; i += timeSkip) {
-                LocalDateTime localDateStartTime = LocalDateTime.ofInstant(startTimeFromRequest.toInstant(),
-                                ZoneId.systemDefault()).withHour(i)
-                        .withMinute(0)
-                        .withSecond(0);
-                Date startTime = Date.from(localDateStartTime.atZone(ZoneId.systemDefault()).toInstant());
-
-                LocalDateTime localDateEndTime = LocalDateTime.ofInstant(startTimeFromRequest.toInstant(),
-                                ZoneId.systemDefault())
-                        .withHour(i + timeSkip)
-                        .withMinute(0)
-                        .withSecond(0);
-                Date endTime = Date.from(localDateEndTime.atZone(ZoneId.systemDefault()).toInstant());
-
-                TimeIntervals singleTimeIntervalFirstBox = new TimeIntervals(startTime, endTime, 1);
-                timeIntervals.add(singleTimeIntervalFirstBox);
-                TimeIntervals singleTimeIntervalSecondBox = new TimeIntervals(startTime, endTime, 2);
-                timeIntervals.add(singleTimeIntervalSecondBox);
-                TimeIntervals singleTimeIntervalThirdBox = new TimeIntervals(startTime, endTime, 3);
-                timeIntervals.add(singleTimeIntervalThirdBox);
-            }
+        if (time < 75) {
+            timeIntervals.addAll(fillTimeIntervals(startTimeFromRequest, 1, 22, 8, ordersArrayPriceTimeRequest.getOrderType()));
+        } else if (time <= 180) {
+            timeIntervals.addAll(fillTimeIntervals(startTimeFromRequest, 2, 20, 8, ordersArrayPriceTimeRequest.getOrderType()));
+            timeIntervals.addAll(fillTimeIntervals(startTimeFromRequest, 9, 19, 8, ordersArrayPriceTimeRequest.getOrderType()));
         } else {
-            timeSkip = 1;
-            for (int i = 8; i < 22; i += timeSkip) {
-                LocalDateTime localDateStartTime = LocalDateTime.ofInstant(startTimeFromRequest.toInstant(),
-                                ZoneId.systemDefault())
-                        .withHour(i)
-                        .withMinute(0)
-                        .withSecond(0);
-                Date startTime = Date.from(localDateStartTime.atZone(ZoneId.systemDefault()).toInstant());
-
-                LocalDateTime localDateEndTime = LocalDateTime.ofInstant(startTimeFromRequest.toInstant(),
-                                ZoneId.systemDefault())
-                        .withHour(i + timeSkip)
-                        .withMinute(0)
-                        .withSecond(0);
-                Date endTime = Date.from(localDateEndTime.atZone(ZoneId.systemDefault()).toInstant());
-
-                TimeIntervals singleTimeIntervalFirstBox = new TimeIntervals(startTime, endTime, 1);
-                timeIntervals.add(singleTimeIntervalFirstBox);
-                TimeIntervals singleTimeIntervalSecondBox = new TimeIntervals(startTime, endTime, 2);
-                timeIntervals.add(singleTimeIntervalSecondBox);
-                TimeIntervals singleTimeIntervalThirdBox = new TimeIntervals(startTime, endTime, 3);
-                timeIntervals.add(singleTimeIntervalThirdBox);
-            }
+            timeIntervals.addAll(fillTimeIntervals(startTimeFromRequest, 6, 16, 8, ordersArrayPriceTimeRequest.getOrderType()));
+            timeIntervals.addAll(fillTimeIntervals(startTimeFromRequest, 6, 15, 9, ordersArrayPriceTimeRequest.getOrderType()));
+            timeIntervals.addAll(fillTimeIntervals(startTimeFromRequest, 6, 14, 10, ordersArrayPriceTimeRequest.getOrderType()));
+            timeIntervals.addAll(fillTimeIntervals(startTimeFromRequest, 6, 13, 11, ordersArrayPriceTimeRequest.getOrderType()));
+            timeIntervals.addAll(fillTimeIntervals(startTimeFromRequest, 6, 13, 12, ordersArrayPriceTimeRequest.getOrderType()));
         }
-
-
         List<Order> orders = ordersRepository
                 .getBookedOrdersInOneDayFull(ordersArrayPriceTimeRequest.getStartTime(),
                         ordersArrayPriceTimeRequest.getEndTime());
@@ -270,6 +236,7 @@ public class OrderController {
                 }
             }
         }
+
         List<TimeIntervals> noDuplicatesTimeList = new ArrayList<>(clearOrders);
 
         for (var firstInterval : clearOrders) {
@@ -283,13 +250,15 @@ public class OrderController {
             }
         }
 
-        return ResponseEntity.ok(new TimeAndPriceAndFreeTimeResponse(price, time, noDuplicatesTimeList));
+        return ResponseEntity.ok(new
+
+                TimeAndPriceAndFreeTimeResponse(price, time, noDuplicatesTimeList));
     }
 
     @Transactional
     @PostMapping("/bookWashingOrder")
     public ResponseEntity<?> newWashingOrder(@Valid @RequestBody BookingWashingPolishingOrderRequest bookingOrderRequest) {
-        if (!checkTime(bookingOrderRequest.getStartTime(), bookingOrderRequest.getEndTime(), bookingOrderRequest.getBoxNumber())){
+        if (!checkTime(bookingOrderRequest.getStartTime(), bookingOrderRequest.getEndTime(), bookingOrderRequest.getBoxNumber())) {
             return ResponseEntity.badRequest().body(new MessageResponse("Error: Это время в этом боксе уже занято"));
         }
         UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
@@ -365,7 +334,7 @@ public class OrderController {
     @Transactional
     @PostMapping("/bookTireOrder")
     public ResponseEntity<?> newTireOrder(@Valid @RequestBody BookingTireOrderRequest bookingOrderRequest) {
-        if (!checkTime(bookingOrderRequest.getStartTime(), bookingOrderRequest.getEndTime(), bookingOrderRequest.getBoxNumber())){
+        if (!checkTime(bookingOrderRequest.getStartTime(), bookingOrderRequest.getEndTime(), bookingOrderRequest.getBoxNumber())) {
             return ResponseEntity.badRequest().body(new MessageResponse("Error: Это время в этом боксе уже занято"));
         }
 
@@ -442,7 +411,6 @@ public class OrderController {
 
         if (bookingOrderRequest.getPrice() == null || bookingOrderRequest.getPrice() == 0) {
             price = washingOrderPrice(bookingOrderRequest.getOrders(), bookingOrderRequest.getAutoType());
-            //логика подсчёта цены
         }
 
         Order newOrder = new Order(ordersWashings, bookingOrderRequest.getStartTime(), bookingOrderRequest.getEndTime(),
@@ -507,7 +475,7 @@ public class OrderController {
     @Transactional
     @PreAuthorize("hasRole('MODERATOR') or hasRole('ADMIN')")
     public ResponseEntity<?> createTireOrder(@Valid @RequestBody CreatingTireOrderRequest bookingOrderRequest) {
-        if (!checkTime(bookingOrderRequest.getStartTime(), bookingOrderRequest.getEndTime(), bookingOrderRequest.getBoxNumber())){
+        if (!checkTime(bookingOrderRequest.getStartTime(), bookingOrderRequest.getEndTime(), bookingOrderRequest.getBoxNumber())) {
             return ResponseEntity.badRequest().body(new MessageResponse("Error: Это время в этом боксе уже занято"));
         }
 
@@ -540,6 +508,45 @@ public class OrderController {
                 newOrder.getAutoType(), newOrder.getBonuses(),
                 newOrder.isExecuted(), newOrder.getComments(), newOrder.getPrice(),
                 newOrder.getOrderType(), newOrder.getWheelR(), bookingOrderRequest.getUserContacts()));
+    }
+
+    public List<TimeIntervals> fillTimeIntervals(Date startTimeFromRequest, int timeSkip, int endOfFor, int startOfFor, String orderType) {
+        List<TimeIntervals> timeIntervals = new ArrayList<>();
+        for (int i = startOfFor; i < endOfFor; i += timeSkip) {
+            LocalDateTime localDateStartTime = LocalDateTime.ofInstant(startTimeFromRequest.toInstant(),
+                            ZoneId.systemDefault())
+                    .withHour(i)
+                    .withMinute(0)
+                    .withSecond(0);
+            Date startTime = Date.from(localDateStartTime.atZone(ZoneId.systemDefault()).toInstant());
+
+            LocalDateTime localDateEndTime = LocalDateTime.ofInstant(startTimeFromRequest.toInstant(),
+                            ZoneId.systemDefault())
+                    .withHour(i + timeSkip)
+                    .withMinute(0)
+                    .withSecond(0);
+            Date endTime = Date.from(localDateEndTime.atZone(ZoneId.systemDefault()).toInstant());
+
+            switch (orderType) {
+                case "wash" -> {
+                    TimeIntervals singleTimeIntervalFirstBox = new TimeIntervals(startTime, endTime, 1);
+                    timeIntervals.add(singleTimeIntervalFirstBox);
+                    TimeIntervals singleTimeIntervalSecondBox = new TimeIntervals(startTime, endTime, 2);
+                    timeIntervals.add(singleTimeIntervalSecondBox);
+                    TimeIntervals singleTimeIntervalThirdBox = new TimeIntervals(startTime, endTime, 3);
+                    timeIntervals.add(singleTimeIntervalThirdBox);
+                }
+                case "tire" -> {
+                    TimeIntervals singleTimeIntervalFirstBox = new TimeIntervals(startTime, endTime, 0);
+                    timeIntervals.add(singleTimeIntervalFirstBox);
+                }
+                case "polishing" -> {
+                    TimeIntervals singleTimeIntervalFirstBox = new TimeIntervals(startTime, endTime, 5);
+                    timeIntervals.add(singleTimeIntervalFirstBox);
+                }
+            }
+        }
+        return timeIntervals;
     }
 
     public boolean checkTime(Date startTime, Date endTime, int box) {
