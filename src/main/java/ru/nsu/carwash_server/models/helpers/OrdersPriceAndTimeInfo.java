@@ -1,5 +1,6 @@
 package ru.nsu.carwash_server.models.helpers;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
@@ -12,5 +13,6 @@ public class OrdersPriceAndTimeInfo{
 
     private int price;
 
+    @JsonFormat(timezone="Asia/Novosibirsk")
     private Date startTime;
 }

@@ -136,6 +136,7 @@ public class AdminController {
 
     @PutMapping("/updateTireOrder")
     public ResponseEntity<?> updateTireOrder(@Valid @RequestBody UpdateTireOrderRequest updateTireOrderRequest) {
+        System.out.println(updateTireOrderRequest);
         tireRepository.updateTireOrderInfo(updateTireOrderRequest.getName(), updateTireOrderRequest.getPrice_r_13(),
                 updateTireOrderRequest.getPrice_r_14(), updateTireOrderRequest.getPrice_r_15(),
                 updateTireOrderRequest.getPrice_r_16(), updateTireOrderRequest.getPrice_r_17(),

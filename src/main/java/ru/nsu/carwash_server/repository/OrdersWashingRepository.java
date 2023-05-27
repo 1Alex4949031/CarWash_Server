@@ -13,7 +13,6 @@ import java.util.Optional;
 
 @Repository
 public interface OrdersWashingRepository extends JpaRepository<OrdersWashing, Long> {
-    Optional<OrdersWashing> findByName(String name);
 
     @Modifying
     @Transactional
@@ -35,7 +34,11 @@ public interface OrdersWashingRepository extends JpaRepository<OrdersWashing, Lo
 
     @Transactional
     @Query(value = "SELECT name FROM orders_washing", nativeQuery = true)
-    Optional<List<String>> findAllName();
+    Optional<List<String>> findAllNames();
+
+    @Transactional
+    @Query(value = "SELECT * FROM orders_washing WHERE name = :Name ", nativeQuery = true)
+    Optional<OrdersWashing> findByName(@Param("Name") String name);
 
     @Query(value = "SELECT name FROM orders_washing WHERE associated_order LIKE CONCAT('%', :mainOrder, '%')", nativeQuery = true)
     Optional<List<String>> findAllAssociated(@Param("mainOrder") String mainOrder);

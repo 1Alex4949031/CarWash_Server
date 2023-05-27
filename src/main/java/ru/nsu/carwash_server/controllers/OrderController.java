@@ -84,9 +84,33 @@ public class OrderController {
         this.userRepository = userRepository;
     }
 
+    @GetMapping("/getServiceInfo")
+    public ResponseEntity<?> getServiceInfo(@RequestParam(name = "orderName", required = true) String orderName,
+                                            @RequestParam(name = "orderType", required = true) String orderType) {
+
+        switch (orderType) {
+            case "Wash" -> {
+                var order = ordersWashingRepository.findByName(orderName)
+                        .orElseThrow(() -> new NotInDataBaseException("услуг мойки не найдена услуга: ", orderName));
+                return ResponseEntity.ok(order);
+            }
+            case "Polishing" -> {
+                var order = ordersPolishingRepository.findByName(orderName)
+                        .orElseThrow(() -> new NotInDataBaseException("услуг полировки не найдена услуга: ",orderName));
+                return ResponseEntity.ok(order);
+            }
+            case "Tire" -> {
+                var order = ordersTireRepository.findByName(orderName)
+                        .orElseThrow(() -> new NotInDataBaseException("услуг шиномонтажа не найдена услуга: ", orderName));
+                return ResponseEntity.ok(order);
+            }
+        }
+        return ResponseEntity.ok( new MessageResponse("Такая услуга не найдена в базе данных"));
+    }
+
     @PutMapping("/updateOrderInfo")
     public ResponseEntity<?> updateOrderInfo(@Valid @RequestBody UpdateOrderInfoRequest updateOrderInfoRequest) {
-        if (updateOrderInfoRequest.getStartTime() != null && updateOrderInfoRequest.getEndTime() != null){
+        if (updateOrderInfoRequest.getStartTime() != null && updateOrderInfoRequest.getEndTime() != null) {
             if (!checkTime(updateOrderInfoRequest.getStartTime(), updateOrderInfoRequest.getEndTime(), updateOrderInfoRequest.getBoxNumber())) {
                 return ResponseEntity.badRequest().body(new MessageResponse("Error: Это время в этом боксе уже занято"));
             }
@@ -192,7 +216,6 @@ public class OrderController {
     @PostMapping("/getBookedTimeInOneDay")
     public ResponseEntity<?> getBookedTimeInOneDay(@Valid @RequestBody GetBookedOrdersInTimeIntervalRequest
                                                            bookedOrdersInTimeIntervalRequest) {
-
         List<Order> orders = ordersRepository
                 .getBookedOrdersInOneDayFull(bookedOrdersInTimeIntervalRequest.getStartTime(),
                         bookedOrdersInTimeIntervalRequest.getEndTime());
@@ -223,13 +246,14 @@ public class OrderController {
             timeIntervals.addAll(fillTimeIntervals(startTimeFromRequest, 1, 22, 8, ordersArrayPriceTimeRequest.getOrderType()));
         } else if (time <= 180) {
             timeIntervals.addAll(fillTimeIntervals(startTimeFromRequest, 2, 20, 8, ordersArrayPriceTimeRequest.getOrderType()));
-            timeIntervals.addAll(fillTimeIntervals(startTimeFromRequest, 9, 19, 8, ordersArrayPriceTimeRequest.getOrderType()));
+            timeIntervals.addAll(fillTimeIntervals(startTimeFromRequest, 2, 19, 9, ordersArrayPriceTimeRequest.getOrderType()));
         } else {
             timeIntervals.addAll(fillTimeIntervals(startTimeFromRequest, 6, 16, 8, ordersArrayPriceTimeRequest.getOrderType()));
             timeIntervals.addAll(fillTimeIntervals(startTimeFromRequest, 6, 15, 9, ordersArrayPriceTimeRequest.getOrderType()));
             timeIntervals.addAll(fillTimeIntervals(startTimeFromRequest, 6, 14, 10, ordersArrayPriceTimeRequest.getOrderType()));
             timeIntervals.addAll(fillTimeIntervals(startTimeFromRequest, 6, 13, 11, ordersArrayPriceTimeRequest.getOrderType()));
             timeIntervals.addAll(fillTimeIntervals(startTimeFromRequest, 6, 13, 12, ordersArrayPriceTimeRequest.getOrderType()));
+            timeIntervals.addAll(fillTimeIntervals(startTimeFromRequest, 6, 14, 13, ordersArrayPriceTimeRequest.getOrderType()));
         }
         List<Order> orders = ordersRepository
                 .getBookedOrdersInOneDayFull(ordersArrayPriceTimeRequest.getStartTime(),
