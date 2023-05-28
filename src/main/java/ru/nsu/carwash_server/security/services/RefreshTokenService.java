@@ -63,4 +63,16 @@ public class RefreshTokenService {
     }
     return 0;
   }
+
+  public boolean findByUser(Long userId) {
+    var user = userRepository.findById(userId)
+            .orElseThrow(() -> new RuntimeException("Error: Пользователя с таким телефоном не существует"));
+    return refreshTokenRepository.findByUser(user).isPresent();
+  }
+
+  @Transactional
+  public String deleteAllByUserId(Long userId) {
+    refreshTokenRepository.deleteAllByUserId(userId);
+    return null;
+  }
 }

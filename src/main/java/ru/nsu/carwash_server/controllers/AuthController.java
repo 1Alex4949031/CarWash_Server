@@ -26,6 +26,7 @@ import ru.nsu.carwash_server.payload.request.TokenRefreshRequest;
 import ru.nsu.carwash_server.payload.response.JwtResponse;
 import ru.nsu.carwash_server.payload.response.MessageResponse;
 import ru.nsu.carwash_server.payload.response.TokenRefreshResponse;
+import ru.nsu.carwash_server.repository.RefreshTokenRepository;
 import ru.nsu.carwash_server.repository.RoleRepository;
 import ru.nsu.carwash_server.repository.UserRepository;
 import ru.nsu.carwash_server.security.jwt.JwtUtils;
@@ -56,6 +57,7 @@ public class AuthController {
     private final JwtUtils jwtUtils;
 
     private final RefreshTokenService refreshTokenService;
+    private final RefreshTokenRepository refreshTokenRepository;
 
     @Autowired
     public AuthController(
@@ -64,14 +66,15 @@ public class AuthController {
             RoleRepository roleRepository,
             PasswordEncoder encoder,
             JwtUtils jwtUtils,
-            RefreshTokenService refreshTokenService
-    ) {
+            RefreshTokenService refreshTokenService,
+            RefreshTokenRepository refreshTokenRepository) {
         this.authenticationManager = authenticationManager;
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
         this.encoder = encoder;
         this.jwtUtils = jwtUtils;
         this.refreshTokenService = refreshTokenService;
+        this.refreshTokenRepository = refreshTokenRepository;
     }
 
     @PostMapping("/signin")
@@ -163,7 +166,7 @@ public class AuthController {
     public ResponseEntity<?> logoutUser() {
         UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         Long userId = userDetails.getId();
-        refreshTokenService.deleteByUserId(userId);
+        refreshTokenService.deleteAllByUserId(userId);
         return ResponseEntity.ok(new MessageResponse("Log out successful!"));
     }
 

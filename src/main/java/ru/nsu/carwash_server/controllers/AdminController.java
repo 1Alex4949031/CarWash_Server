@@ -146,6 +146,7 @@ public class AdminController {
     }
 
     @PutMapping("/updateUserInfo")
+    @PreAuthorize("hasRole('MODERATOR') or hasRole('ADMIN')")
     public ResponseEntity<?> changeUserInfo(@Valid @RequestBody UpdateUserInfoRequest updateUserInfoRequest) {
         User user = userRepository.findByUsername(updateUserInfoRequest.getUsername())
                 .orElseThrow(() -> new UserNotFoundException(updateUserInfoRequest.getUsername()));
@@ -162,7 +163,7 @@ public class AdminController {
                 return roleRepository.findByName(enumRole.get())
                         .orElseThrow(() -> new NotInDataBaseException("ролей не найдена роль: ", enumRole.get().name()));
             } else {
-                throw new RuntimeException("Error: Invalid role.");
+                throw new RuntimeException("Error: Invalid role:" + strRoles);
             }
         }).collect(Collectors.toSet());
         Role userRole = roleRepository.findByName(ERole.ROLE_USER)
@@ -173,7 +174,7 @@ public class AdminController {
         user.setRoles(roles);
         userRepository.changeUserInfo(updateUserInfoRequest.getEmail(), updateUserInfoRequest.getUsername(),
                 userId, updateUserInfoRequest.getFullName());
-        refreshTokenService.deleteByUserId(userId);
+        refreshTokenService.deleteAllByUserId(userId);
         return ResponseEntity.ok(new MessageResponse("Пользователь " + userId
                 + " получил почту " + updateUserInfoRequest.getEmail()
                 + " и новый телефон " + updateUserInfoRequest.getUsername()));

@@ -48,7 +48,7 @@ UserController {
                 .orElseThrow(() -> new NotInDataBaseException("пользователей не найден пользователь с айди: ", userId.toString()));
         userRepository.changeUserInfo(updateUserInfoRequest.getEmail(), updateUserInfoRequest.getUsername(),
                 userId, updateUserInfoRequest.getFullName());
-        refreshTokenService.deleteByUserId(userId);
+        refreshTokenService.deleteAllByUserId(userId);
         return ResponseEntity.ok(new MessageResponse("Пользователь " + userId
                 + " получил почту " + user.getEmail()
                 + " и новый телефон " + user.getUsername()));
