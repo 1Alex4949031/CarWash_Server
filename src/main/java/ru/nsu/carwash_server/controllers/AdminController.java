@@ -12,12 +12,12 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import ru.nsu.carwash_server.models.OrdersPriceTimeAndDoneInfo;
 import ru.nsu.carwash_server.models.Role;
 import ru.nsu.carwash_server.models.User;
 import ru.nsu.carwash_server.models.constants.ERole;
 import ru.nsu.carwash_server.models.exception.NotInDataBaseException;
 import ru.nsu.carwash_server.models.exception.UserNotFoundException;
-import ru.nsu.carwash_server.models.helpers.OrdersPriceAndTimeInfo;
 import ru.nsu.carwash_server.payload.request.UpdatePolishingOrderRequest;
 import ru.nsu.carwash_server.payload.request.UpdateTireOrderRequest;
 import ru.nsu.carwash_server.payload.request.UpdateUserInfoRequest;
@@ -109,9 +109,10 @@ public class AdminController {
     public ResponseEntity<?> getUserOrdersByAdmin(@Valid @RequestParam("username") String username) {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new NotInDataBaseException("пользователей не найден пользователь: ", username));
-        List<OrdersPriceAndTimeInfo> ordersPriceAndTimeInfo = new ArrayList<>();
+        List<OrdersPriceTimeAndDoneInfo> ordersPriceAndTimeInfo = new ArrayList<>();
         for (var item : user.getOrders()) {
-            ordersPriceAndTimeInfo.add(new OrdersPriceAndTimeInfo(item.getOrderType(), item.getPrice(), item.getStartTime()));
+            ordersPriceAndTimeInfo.add(new OrdersPriceTimeAndDoneInfo(item.getOrderType(), item.getPrice(),
+                    item.getStartTime(), item.isExecuted()));
         }
         return ResponseEntity.ok(new UserOrdersResponse(ordersPriceAndTimeInfo));
     }

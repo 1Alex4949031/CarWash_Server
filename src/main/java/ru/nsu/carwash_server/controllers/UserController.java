@@ -9,9 +9,9 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import ru.nsu.carwash_server.models.OrdersPriceTimeAndDoneInfo;
 import ru.nsu.carwash_server.models.User;
 import ru.nsu.carwash_server.models.exception.NotInDataBaseException;
-import ru.nsu.carwash_server.models.helpers.OrdersPriceAndTimeInfo;
 import ru.nsu.carwash_server.payload.request.UpdateUserInfoRequest;
 import ru.nsu.carwash_server.payload.response.MessageResponse;
 import ru.nsu.carwash_server.payload.response.UserOrdersResponse;
@@ -60,9 +60,10 @@ UserController {
         Long userId = userDetails.getId();
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new NotInDataBaseException("пользователей не найден пользователь с айди: ", userId.toString()));
-        List<OrdersPriceAndTimeInfo> ordersPriceAndTimeInfo = new ArrayList<>();
+        List<OrdersPriceTimeAndDoneInfo> ordersPriceAndTimeInfo = new ArrayList<>();
         for (var item: user.getOrders()){
-            ordersPriceAndTimeInfo.add(new OrdersPriceAndTimeInfo(item.getOrderType(), item.getPrice(),item.getStartTime()));
+            ordersPriceAndTimeInfo.add(new OrdersPriceTimeAndDoneInfo(item.getOrderType(), item.getPrice(),
+                    item.getStartTime(), item.isExecuted()));
         }
         return ResponseEntity.ok(new UserOrdersResponse(ordersPriceAndTimeInfo));
     }
