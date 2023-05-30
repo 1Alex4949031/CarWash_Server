@@ -20,7 +20,7 @@ public interface OrdersRepository extends JpaRepository<Order, Long> {
             "price = COALESCE(:Price, price), administrator = COALESCE(:Administrator, administrator)," +
             "auto_number = COALESCE(:AutoNumber, auto_number), box_number = COALESCE(:BoxNumber, box_number)," +
             "specialist = COALESCE(:Specialist, specialist), bonuses = COALESCE(:Bonuses, bonuses)," +
-            "comments = COALESCE(:Comments, comments), executed = COALESCE(:Executed, executed)," +
+            "comments = COALESCE(:Comments, comments), executed = :Executed," +
             "order_type = COALESCE(:OrderType, order_type), start_time = COALESCE(:StartTime, start_time)," +
             "wheelr = COALESCE(:WheelR, wheelr), end_time = COALESCE(:EndTime, end_time), user_contacts = COALESCE(:UserPhone, user_contacts)" +
             "WHERE id = :OrderId", nativeQuery = true)

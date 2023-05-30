@@ -110,11 +110,6 @@ public class OrderController {
 
     @PutMapping("/updateOrderInfo")
     public ResponseEntity<?> updateOrderInfo(@Valid @RequestBody UpdateOrderInfoRequest updateOrderInfoRequest) {
-        if (updateOrderInfoRequest.getStartTime() != null && updateOrderInfoRequest.getEndTime() != null) {
-            if (!checkTime(updateOrderInfoRequest.getStartTime(), updateOrderInfoRequest.getEndTime(), updateOrderInfoRequest.getBoxNumber())) {
-                return ResponseEntity.badRequest().body(new MessageResponse("Error: Это время в этом боксе уже занято"));
-            }
-        }
         var user = userRepository.findByUsername(updateOrderInfoRequest.getUserPhone());
         String userContacts;
         if (user.isPresent()) {
